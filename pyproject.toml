@@ -1,0 +1,84 @@
+[project]
+name = "mlso-api-client"
+version = "0.2.1"
+description = "Python package providing a client to access MLSO data"
+authors = [
+  { name="Michael Galloy", email="mgalloy@ucar.edu" },
+]
+license = "BSD-3-Clause"
+license-files = ["LICENSE"]
+readme = "README.md"
+requires-python = ">=3.7"
+# see classifiers at https://pypi.org/classifiers/
+classifiers = [
+  "Development Status :: 4 - Beta",
+# Development Status :: 5 - Production/Stable
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Natural Language :: English",
+  "Programming Language :: Python",
+]
+keywords = ["webservice", "Mauna Loa Solar Observatory", "MLSO", "solar"]
+dependencies = [
+  "requests",
+  "tqdm"
+]
+
+[project.urls]
+homepage = "https://www2.hao.ucar.edu/mlso"
+repository = "https://github.com/NCAR/mlso-api-client"
+documentation = "https://mlso-api-client.readthedocs.io/en/latest/"
+issues = "https://github.com/NCAR/mlso-api-client/issues"
+changelog = "https://github.com/NCAR/mlso-api-client/blob/master/CHANGELOG.md"
+
+[project.optional-dependencies]
+dev = [
+  "pytest",
+  "pre-commit",
+  "tox",
+  "wheel",
+  "watchdog",
+  "Sphinx",
+  "twine",
+  "coverage",
+  "flake8",
+  "pytest-runner",
+  "black",
+  "sphinx_rtd_theme",
+]
+
+[project.scripts]
+mlsoapi = "mlso.api:client.main"
+
+[tool.black]
+line-length = 88
+target-version = ['py37']
+include = '\.pyi?$'
+exclude = '''
+
+(
+  /(
+      \.eggs         # exclude a few common directories in the
+    | \.git          # root of the project
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | _build
+    | buck-out
+    | build
+    | dist
+  )/
+  | foo.py           # also separately exclude a file named foo.py in
+                     # the root of the project
+)
+'''
+
+[tool.pytest.ini_options]
+# increment the --cov-fail-under as we increase test coverage
+addopts = "--cov-report html:coverage_html --cov-report term-missing --cov-fail-under 80"
+
+[build-system]
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
