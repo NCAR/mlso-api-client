@@ -1,6 +1,35 @@
 # -*- coding: utf-8 -*-
 
-"""Module defining the Python and command line client.
+"""Module defining the Python and command-line client. The programmatic
+interface is typically used like::
+
+    >>> from mlso.api import client
+    >>> client.about()
+    {'documentation': 'https://mlso-api-client.readthedocs.io/en/latest/',
+    'homepage': 'https://www2.hao.ucar.edu/mlso',
+    'support': 'mlso_data_requests@ucar.edu',
+    'version': '0.3.1'}
+
+The command-line interface, `mlsoapi`, is also available::
+
+    usage: mlsoapi [-h] [-v] [-u BASE_URL] [--verbose] [-q] {instruments,products,files} ...
+
+    MLSO API command line interface (mlso-api-client 1.0.0)
+
+    positional arguments:
+    {instruments,products,files}
+                            sub-command help
+        instruments         MLSO instruments
+        products            MLSO instruments
+        files               MLSO data files
+
+    options:
+    -h, --help            show this help message and exit
+    -v, --version         show program's version number and exit
+    -u BASE_URL, --base-url BASE_URL
+                            base URL for MLSO API
+    --verbose             output warnings
+    -q, --quiet           surpress informational messages
 """
 
 import argparse
@@ -19,7 +48,7 @@ import tqdm
 
 from . import __version__
 
-BASE_URL = "http://api.mlso.ucar.edu:5000"
+BASE_URL = "http://api.mlso.ucar.edu"
 API_VERSION = "v1"
 SIGNUP_URL = "https://registration.hao.ucar.edu"
 
@@ -41,7 +70,7 @@ logger.setLevel(logging.DEBUG)
 
 
 class UserNotFound(Exception):
-    """Exception raised when a username is found in the registration database."""
+    """Exception raised when a username is not found in the registration database."""
 
     pass
 
@@ -57,7 +86,17 @@ class ServerError(Exception):
 def about(
     base_url: str = BASE_URL, api_version: str = API_VERSION, verbose: bool = False
 ):
-    """Retrieve the results of the `/about` endpoint."""
+    """Retrieve basic facts about the MLSO API server, i.e., the results of the
+    `/about` endpoint. For example::
+
+        >>> client.about()
+        {'documentation': 'https://mlso-api-client.readthedocs.io/en/latest/',
+        'homepage': 'https://www2.hao.ucar.edu/mlso',
+        'support': 'mlso_data_requests@ucar.edu',
+        'version': '1.0.0'}
+
+    `about` can raise a `ServerError` if the server response is not valid.
+    """
     url = f"{base_url}/{api_version}/about"
     if verbose:
         logger.debug(f"URL: {url}")
@@ -84,7 +123,26 @@ def instruments(
     base_url: str = BASE_URL, api_version: str = API_VERSION, verbose: bool = False
 ):
     """Retrieve list of instruments from the `/instruments/{instrument}`
-    endpoint with some of their properties.
+    endpoint with some of their properties. For example::
+
+        >>> from mlso.api import client
+        >>> client.instruments()
+        [{'id': 'kcor',
+        'start-date': '2013-09-30T18:57:54',
+        'end-date': '2025-03-24T21:04:20',
+        'name': 'COSMO K-Coronagraph (KCor)'},
+        {'id': 'ucomp',
+        'start-date': '2021-07-15T17:31:43',
+        'end-date': '2025-03-24T21:03:55',
+        'name': 'Upgraded Coronal Multi-Polarimeter (UCoMP)'}]
+
+    Or::
+
+        >>> [i["id"] for i in client.instruments()]
+        ['kcor', 'ucomp']
+
+    `instruments` can raise a `ServerError` if there is a problem with the web
+    request.
     """
     url = f"{base_url}/{api_version}/instruments"
     if verbose:
@@ -143,8 +201,57 @@ def products(
     api_version: str = API_VERSION,
     verbose: bool = False,
 ):
-    """Handle retrieving the `/instruments/{instrument}/products` endpoint
-    results. Can raise ServerError if there is a problem with the web request.
+    """Retrieve the available products for the given instruments, i.e.,
+    retreive the results of the `/instruments/{instrument}/products` endpoint.
+    For example::
+
+        >>> from mlso.api import client
+        >>> client.products("ucomp")
+        {'products': [{'description': 'IQUV and backgrounds for various wavelengths',
+        'id': 'l1',
+        'title': 'Level 1'},
+        {'description': 'intensity-only level 1',
+        'id': 'intensity',
+        'title': 'Level 1 intensity'},
+        {'description': 'mean of level 1 files',
+        'id': 'mean',
+        'title': 'Level 1 mean'},
+        {'description': 'median of level 1 files',
+        'id': 'median',
+        'title': 'Level 1 median'},
+        {'description': 'standard deviation of level 1 files',
+        'id': 'sigma',
+        'title': 'Level 1 sigma'},
+        {'description': 'level 2 products', 'id': 'l2', 'title': 'Level 2'},
+        {'description': 'mean, median, standard deviation of level 2 files',
+        'id': 'l2average',
+        'title': 'Level 2 average'},
+        {'description': 'density', 'id': 'density', 'title': 'Density'},
+        {'description': 'level 2 dynamics products',
+        'id': 'dynamics',
+        'title': 'Dynamics'},
+        {'description': 'level 2 polarization products',
+        'id': 'polarization',
+        'title': 'Polarization'},
+        {'description': 'all products', 'id': 'all', 'title': 'All'}]}
+
+    And::
+
+        >>> [p["id"] for p in client.products("ucomp", base_url=base_url)["products"]]
+        ['l1',
+        'intensity',
+        'mean',
+        'median',
+        'sigma',
+        'l2',
+        'l2average',
+        'density',
+        'dynamics',
+        'polarization',
+        'all']
+
+    `products` can raise a `ServerError` if there is a problem with the web
+    request.
     """
     url = f"{base_url}/{api_version}/instruments/{instrument}/products"
     if verbose:
@@ -174,8 +281,19 @@ def authenticate(
     api_version: str = API_VERSION,
     verbose: bool = False,
 ):
-    """Authenticate username within the session. This must be called before
-    `download_file`.
+    """Authenticate username within the session. The username is registered
+    with the `MLSO website`_ first. Then `authenticate` must be called before
+    calling `download_file`. For example::
+
+        >>> client.authenticate(my_email_address)
+
+    You only need to call `authenticate` once *per session*.
+
+    This routine can raise a `UserNotFound` exception if the `username` has not
+    already been registered with the MLSO website or a `ServerError` exception
+    if there is a problem with the web request.
+
+    .. _MLSO website: https://registration.hao.ucar.edu
     """
     if username is None:
         msg = f"username required, sign up at {SIGNUP_URL}"
@@ -205,9 +323,17 @@ def authenticate(
 
 def download_file(file, output_dir):
     """Download a single file to the given output directory. The `file` argument
-    is a dict with fields "url" and "filename". `output_dir` is simply the
-    directory to put the downloaded file. Can raise ServerError if there is a
-    problem with the web request.
+    is a dict with at least fields "url" and "filename". `output_dir` is simply
+    the directory to put the downloaded file.
+
+        >>> from mlso.api import client
+        >>> client.authenticate(my_email_address)
+        >>> filters = {"start-date": "2025-3-24", "wave-region": "789"}
+        >>> files_info = client.files("ucomp", "l2", filters=filters)
+        >>> for f in files_info["files"]:
+        ...     download_file(f, ".")
+
+    Can raise `ServerError` if there is a problem with the web request.
     """
     url = file["url"]
     try:
@@ -229,14 +355,36 @@ def download_file(file, output_dir):
 def files(
     instrument: str,
     product: str,
-    filters: list[dict[str, str]] | None = None,
-    base_url: str = BASE_URL,
-    api_version: str = API_VERSION,
+    filters: dict[str, str] | None = None,
+    base_url: str | None = BASE_URL,
+    api_version: str | None = API_VERSION,
     verbose=False,
 ):
-    """Handle retrieving the `/instruments/{instrument}/products/{product}`
-    endpoint results. Can raise ServerError if there is a problem with the web
-    request. Use `download_file` to download the file(s) returned with routine.
+    """Retrieve metadata about files from a given instrument/product and
+    filtered by various optional filters, i.e., handle retrieving the results
+    of the `/instruments/{instrument}/products/{product}` endpoint. For
+    example::
+
+        >>> from mlso.api import client
+        >>> client.files("ucomp", "l2", filters={"start-date": "2025-3-24", "wave-region": "789"})
+        {'end-date': '2025-03-24T21:03:55',
+        'files': [{'date-obs': '2025-03-24T20:06:52',
+        'filename': '20250324.200652.ucomp.789.l2.fts',
+        'filesize': 0,
+        'instrument': 'ucomp',
+        'obs-plan': 'synoptic-original-lines.cbk',
+        'product': 'l2',
+        'url': 'http://127.0.0.1:5000/v1/download?obsday-id=10136&instrument=ucomp&filename=20250324.200652.ucomp.789.l2.fts',
+        'wave-region': '789',
+        'wavelengths': 5}],
+        'instrument': 'ucomp',
+        'product': 'l2',
+        'start-date': '2025-3-24',
+        'total_filesize': 0}
+
+    Use `download_file` to download the file(s) returned with this routine.
+
+    Can raise a `ServerError` if there is a problem with the web request.
     """
     url = f"{base_url}/{api_version}/instruments/{instrument}/products/{product}"
 
@@ -274,9 +422,7 @@ def _about(args):
         about_response = about(args.base_url, verbose=args.verbose)
         server_version = about_response["version"]
         documentation_url = about_response["documentation"]
-        print(
-            f"server version: {server_version}, client version: {__version__}"
-        )
+        print(f"server version: {server_version}, client version: {__version__}")
         print(f"documentation: {documentation_url}")
     except ServerError as e:
         print(e)
@@ -378,7 +524,7 @@ def _download_files(
 unit_list = list(zip(["B", "KB", "MB", "GB", "TB", "PB"], [0, 0, 1, 2, 2, 2]))
 
 
-def sizeof_fmt(n_bytes: int) -> str:
+def _sizeof_fmt(n_bytes: int) -> str:
     """Human friendly file size"""
     if n_bytes == 0:
         return "0 B"
@@ -431,7 +577,7 @@ def _files(args):
         product = files_response["product"]
         start_date = files_response["start-date"]
         end_date = files_response["end-date"]
-        filesize = sizeof_fmt(files_response["total_filesize"])
+        filesize = _sizeof_fmt(files_response["total_filesize"])
         print(f"Instrument : {instrument}")
         print(f"Product    : {product}")
         print(f"Start date : {start_date}")
@@ -463,14 +609,14 @@ def _files(args):
         for f in filelist:
             total_filesize += f["filesize"]
             print(
-                f"{f['date-obs']:20s} {f['instrument']:10s} {f['product']:13s} {sizeof_fmt(f['filesize']):>10s} {f['filename']}"
+                f"{f['date-obs']:20s} {f['instrument']:10s} {f['product']:13s} {_sizeof_fmt(f['filesize']):>10s} {f['filename']}"
             )
         if len(filelist) > 1:
             print(
                 f"{'-' * 20} {'-' * 10} {'-' * 13} {'-' * 10} {'-' * max_filename_len}"
             )
             n_files = f"{len(filelist)} files"
-            print(f"{n_files:45s} {sizeof_fmt(total_filesize):>10s} {''}")
+            print(f"{n_files:45s} {_sizeof_fmt(total_filesize):>10s} {''}")
 
 
 def _print_help(args):
@@ -479,7 +625,30 @@ def _print_help(args):
 
 
 def main():
-    """Entry point for MLSO API command-line utility."""
+    """Entry point for MLSO API command-line utility.
+
+    ::
+
+        $ mlsoapi --help
+        usage: mlsoapi [-h] [-v] [-u BASE_URL] [--verbose] [-q] {instruments,products,files} ...
+
+        MLSO API command line interface (mlso-api-client 0.3.2)
+
+        positional arguments:
+        {instruments,products,files}
+                                sub-command help
+            instruments         MLSO instruments
+            products            MLSO instruments
+            files               MLSO data files
+
+        options:
+        -h, --help            show this help message and exit
+        -v, --version         show program's version number and exit
+        -u BASE_URL, --base-url BASE_URL
+                                base URL for MLSO API
+        --verbose             output warnings
+        -q, --quiet           surpress informational messages
+    """
     name = f"MLSO API command line interface (mlso-api-client {__version__})"
     parser = argparse.ArgumentParser(description=name)
 
