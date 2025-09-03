@@ -4,7 +4,7 @@ about: Checklist for a release
 title: 'Release vX.Y.Z'
 labels: release
 assignees: mgalloy
-
+project: MLSO
 ---
 
 ### Pre-release check
@@ -23,4 +23,5 @@ assignees: mgalloy
 
 - [ ] send email with new release notes to iguana, detoma, and observers
 - [ ] in main, increment version in `pyproject.toml` and `CHANGELOG.md`
+- [ ] install new version, i.e., `pip install -e .[dev]`
 
