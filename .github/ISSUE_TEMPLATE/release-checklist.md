@@ -1,10 +1,10 @@
 ---
 name: Release checklist
 about: Checklist for a release
-title: 'Release vX.Y.Z'
+title: "Release vX.Y.Z"
 labels: release
 assignees: mgalloy
-project: MLSO
+projects: ["NCAR/49"]
 ---
 
 ### Pre-release check
