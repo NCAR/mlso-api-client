@@ -1,6 +1,6 @@
 [project]
 name = "mlso-api-client"
-version = "0.3.0"
+version = "0.3.1"
 description = "Python package providing a client to access MLSO data"
 authors = [
   { name="Michael Galloy", email="mgalloy@ucar.edu" },
