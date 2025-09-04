@@ -6,6 +6,7 @@ Welcome to mlso-api-client's documentation!
    :caption: Contents:
 
    installation
+   endpoints
    usage
    mlso-api-client
    contributing
