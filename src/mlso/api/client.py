@@ -10,7 +10,7 @@ interface is typically used like::
     'support': 'mlso_data_requests@ucar.edu',
     'version': '0.3.1'}
 
-The command-line interface, `mlsoapi`, is also available::
+The command-line interface, ``mlsoapi``, is also available::
 
     usage: mlsoapi [-h] [-v] [-u BASE_URL] [--verbose] [-q] {instruments,products,files} ...
 
@@ -87,7 +87,7 @@ def about(
     base_url: str = BASE_URL, api_version: str = API_VERSION, verbose: bool = False
 ):
     """Retrieve basic facts about the MLSO API server, i.e., the results of the
-    `/about` endpoint. For example::
+    ``/about`` endpoint. For example::
 
         >>> client.about()
         {'documentation': 'https://mlso-api-client.readthedocs.io/en/latest/',
@@ -95,7 +95,7 @@ def about(
         'support': 'mlso_data_requests@ucar.edu',
         'version': '1.0.0'}
 
-    `about` can raise a `ServerError` if the server response is not valid.
+    ``about`` can raise a ``ServerError`` if the server response is not valid.
     """
     url = f"{base_url}/{api_version}/about"
     if verbose:
@@ -122,7 +122,7 @@ def about(
 def instruments(
     base_url: str = BASE_URL, api_version: str = API_VERSION, verbose: bool = False
 ):
-    """Retrieve list of instruments from the `/instruments/{instrument}`
+    """Retrieve list of instruments from the ``/instruments/{instrument}``
     endpoint with some of their properties. For example::
 
         >>> from mlso.api import client
@@ -141,8 +141,8 @@ def instruments(
         >>> [i["id"] for i in client.instruments()]
         ['kcor', 'ucomp']
 
-    `instruments` can raise a `ServerError` if there is a problem with the web
-    request.
+    ``instruments`` can raise a ``ServerError`` if there is a problem with the
+    web request.
     """
     url = f"{base_url}/{api_version}/instruments"
     if verbose:
@@ -202,7 +202,7 @@ def products(
     verbose: bool = False,
 ):
     """Retrieve the available products for the given instruments, i.e.,
-    retreive the results of the `/instruments/{instrument}/products` endpoint.
+    retreive the results of the ``/instruments/{instrument}/products`` endpoint.
     For example::
 
         >>> from mlso.api import client
@@ -250,7 +250,7 @@ def products(
         'polarization',
         'all']
 
-    `products` can raise a `ServerError` if there is a problem with the web
+    ``products`` can raise a ``ServerError`` if there is a problem with the web
     request.
     """
     url = f"{base_url}/{api_version}/instruments/{instrument}/products"
@@ -283,15 +283,15 @@ def authenticate(
 ):
     """Authenticate username within the session. The username is registered
     with the `MLSO website`_ first. Then `authenticate` must be called before
-    calling `download_file`. For example::
+    calling ``download_file``. For example::
 
         >>> client.authenticate(my_email_address)
 
-    You only need to call `authenticate` once *per session*.
+    You only need to call ``authenticate`` once *per session*.
 
-    This routine can raise a `UserNotFound` exception if the `username` has not
-    already been registered with the MLSO website or a `ServerError` exception
-    if there is a problem with the web request.
+    This routine can raise a ``UserNotFound`` exception if the ``username`` has
+    not already been registered with the MLSO website or a ``ServerError``
+    exception if there is a problem with the web request.
 
     .. _MLSO website: https://registration.hao.ucar.edu
     """
@@ -322,9 +322,9 @@ def authenticate(
 
 
 def download_file(file, output_dir):
-    """Download a single file to the given output directory. The `file` argument
-    is a dict with at least fields "url" and "filename". `output_dir` is simply
-    the directory to put the downloaded file.
+    """Download a single file to the given output directory. The ``file``
+    argument is a dict with at least fields "url" and "filename". ``output_dir``
+    is simply the directory to put the downloaded file.
 
         >>> from mlso.api import client
         >>> client.authenticate(my_email_address)
@@ -333,7 +333,7 @@ def download_file(file, output_dir):
         >>> for f in files_info["files"]:
         ...     download_file(f, ".")
 
-    Can raise `ServerError` if there is a problem with the web request.
+    Can raise ``ServerError`` if there is a problem with the web request.
     """
     url = file["url"]
     try:
@@ -362,29 +362,67 @@ def files(
 ):
     """Retrieve metadata about files from a given instrument/product and
     filtered by various optional filters, i.e., handle retrieving the results
-    of the `/instruments/{instrument}/products/{product}` endpoint. For
+    of the ``/instruments/{instrument}/products/{product}`` endpoint. For
     example::
 
         >>> from mlso.api import client
         >>> client.files("ucomp", "l2", filters={"start-date": "2025-3-24", "wave-region": "789"})
         {'end-date': '2025-03-24T21:03:55',
-        'files': [{'date-obs': '2025-03-24T20:06:52',
-        'filename': '20250324.200652.ucomp.789.l2.fts',
-        'filesize': 0,
-        'instrument': 'ucomp',
-        'obs-plan': 'synoptic-original-lines.cbk',
-        'product': 'l2',
-        'url': 'http://127.0.0.1:5000/v1/download?obsday-id=10136&instrument=ucomp&filename=20250324.200652.ucomp.789.l2.fts',
-        'wave-region': '789',
-        'wavelengths': 5}],
-        'instrument': 'ucomp',
-        'product': 'l2',
-        'start-date': '2025-3-24',
-        'total_filesize': 0}
+         'files': [{
+            'date-obs': '2025-03-24T20:06:52',
+            'filename': '20250324.200652.ucomp.789.l2.fts',
+            'filesize': 0,
+            'instrument': 'ucomp',
+            'obs-plan': 'synoptic-original-lines.cbk',
+            'product': 'l2',
+            'url': 'http://api.mlso.ucar.edu/v1/download?obsday-id=10136&instrument=ucomp&filename=20250324.200652.ucomp.789.l2.fts',
+            'wave-region': '789',
+            'wavelengths': 5
+         }],
+         'instrument': 'ucomp',
+         'product': 'l2',
+         'start-date': '2025-3-24',
+         'total_filesize': 0}
 
-    Use `download_file` to download the file(s) returned with this routine.
+    Use ``download_file`` to download the file(s) returned with this routine.
 
-    Can raise a `ServerError` if there is a problem with the web request.
+    The available filters are listed below. Note that some filters are available
+    only for certain instruments.
+
+    =============== ===========================================================
+    *Parameter*     *Description*
+    =============== ===========================================================
+    ``start‑date``  Return only files after the "start-date".
+    ``end‑date``    Return only files before the "end-date".
+    ``cr``          Return only files matching Carrington Rotation number "cr".
+    ``every``       Return only a single file for every time period matching
+                    "every". The recognized time periods are:
+
+                    - second,
+                    - minute,
+                    - hour,
+                    - day,
+                    - week,
+                    - month,
+                    - quarter, or
+                    - year
+
+                    (optionally ending in "s"). This parameter is an integer
+                    followed by one of these time periods, e.g.,
+
+                    - ``every=2hours``,
+                    - ``every=1day``, or
+                    - ``every=12hours``.
+    ``wave‑region`` Return only files for the given wave region (UCoMP only).
+    ``obs‑plan``    Return only files matching the given observing plan, e.g.:
+
+                    - "waves"
+                    - "synoptic"
+
+                    (UCoMP only).
+    =============== ===========================================================
+
+    Can raise a ``ServerError`` if there is a problem with the web request.
     """
     url = f"{base_url}/{api_version}/instruments/{instrument}/products/{product}"
 
@@ -415,7 +453,7 @@ def files(
 
 
 def _about(args):
-    """Handle printing the `/about` endpoint results for the command line
+    """Handle printing the ``/about`` endpoint results for the command line
     interface.
     """
     try:
@@ -429,7 +467,7 @@ def _about(args):
 
 
 def _instruments(args):
-    """Handle printing the `/instruments` endpoint results for the command line
+    """Handle printing the ``/instruments`` endpoint results for the command line
     interface.
     """
     try:
@@ -451,7 +489,7 @@ def _instruments(args):
 
 
 def _products(args):
-    """Handle printing the `/instruments/{instrument}/products` endpoint
+    """Handle printing the ``/instruments/{instrument}/products`` endpoint
     results for the command line interface.
     """
     try:
@@ -485,8 +523,8 @@ def _download_files(
     verbose: bool = False,
     quiet: bool = False,
 ):
-    """Download the given files to an output directory. The `files` argument is
-    a list of dicts with fields "url" and "filename".
+    """Download the given files to an output directory. The ``files`` argument
+    is a list of dicts with fields "url" and "filename".
     """
     if not output_dir.is_dir():
         if verbose:
@@ -537,7 +575,7 @@ def _sizeof_fmt(n_bytes: int) -> str:
 
 
 def _files(args):
-    """Handle printing the `/instruments/{instrument}/products/{product}`
+    """Handle printing the ``/instruments/{instrument}/products/{product}``
     endpoint results, optionally downloading the files.
     """
     filters = {}
