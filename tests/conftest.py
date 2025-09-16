@@ -11,6 +11,9 @@ def pytest_addoption(parser):
     parser.addoption(
         "--api-version", type=str, default="v1", help="API version to test"
     )
+    parser.addoption(
+        "--username", type=str, default=None, help="username to test downloads"
+    )
 
 
 @pytest.fixture()
@@ -21,3 +24,8 @@ def base_url(request):
 @pytest.fixture()
 def api_version(request):
     return request.config.getoption("--api-version")
+
+
+@pytest.fixture()
+def username(request):
+    return request.config.getoption("--username")

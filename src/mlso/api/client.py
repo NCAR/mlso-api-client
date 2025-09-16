@@ -359,6 +359,7 @@ def files(
     base_url: str | None = BASE_URL,
     api_version: str | None = API_VERSION,
     verbose=False,
+    client: str | None = "python",
 ):
     """Retrieve metadata about files from a given instrument/product and
     filtered by various optional filters, i.e., handle retrieving the results
@@ -428,6 +429,8 @@ def files(
 
     if len(filters) > 0:
         url += "?" + "&".join([f"{f}={filters[f]}" for f in filters])
+
+    url += ("?" if len(filters) == 0 else "&") + f"client={client}"
 
     if verbose:
         logger.debug(f"URL: {url}")
@@ -605,6 +608,7 @@ def _files(args):
             filters,
             base_url=args.base_url,
             verbose=args.verbose,
+            client="cli",
         )
     except ServerError as e:
         print(e)
