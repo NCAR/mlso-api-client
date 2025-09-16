@@ -1,14 +1,14 @@
 # API Endpoints
 
-The endpoints for the MLSO data API are listed and discussed below.
+The endpoints for the MLSO data API are listed and discussed below. They can be accessed via any client capable of making a GET request.
 
-The MLSO data API will be hosted at:
+The MLSO data API is hosted at:
 
 ```
 http://api.mlso.ucar.edu/
 ```
 
-There could potentially be multiple API versions, starting with "v1", but currently that is the only API version. So the base URL for any of the following endpoints would be:
+There could potentially be multiple API versions, so we will call this initial API "v1", currently the only API version. The base URL for all of the following endpoints is:
 
 ```
 http://api.mlso.ucar.edu/v1
@@ -33,16 +33,16 @@ $ curl -s "http://api.mlso.ucar.edu/v1/about" | python -m json.tool
 
 ### `HTTP GET /instruments`
 
-Use this to list the available instruments. For example, the JSON response for
+Use this to list the available instruments. The result will be a JSON list of string identifiers for the available instruments. For example, the current JSON response for
 
 ```
-http://api.hao.ucar.edu/v1/instruments
+http://api.mlso.ucar.edu/v1/instruments
 ```
 
-would be:
+is:
 
 ``` shell
-$ curl -s "http://api.hao.ucar.edu/v1/instruments" | python -m json.tool
+$ curl -s "http://api.mlso.ucar.edu/v1/instruments" | python -m json.tool
 [
     "ucomp",
     "kcor"
@@ -53,16 +53,16 @@ The names listed are the "instrument IDs" that are used in other endpoints to id
 
 ### `HTTP GET /instruments/<instrument-id>`
 
-Tells you about the instrument corresponding to `instrument-id`. For example, the JSON response for
+This endpoint provides more information about the instrument corresponding to `instrument-id`. For example, the JSON response for
 
 ```
-http://api.hao.ucar.edu/v1/instruments/kcor
+http://api.mlso.ucar.edu/v1/instruments/kcor
 ```
 
-would be:
+is:
 
 ``` shell
-$ curl -sL "http://api.hao.ucar.edu/v1/instruments/kcor" | python -m json.tool
+$ curl -sL "http://api.mlso.ucar.edu/v1/instruments/kcor" | python -m json.tool
 {
     "dates": {
         "end-date": "2025-03-24T21:04:20",
@@ -74,18 +74,20 @@ $ curl -sL "http://api.hao.ucar.edu/v1/instruments/kcor" | python -m json.tool
 }
 ```
 
+The `end-date` value will change as new data is collected.
+
 ### `HTTP GET /instruments/<instrument-id>/products`
 
-Tells you about the products of the instrument corresponding to `instrument-id`. For example, the JSON response for
+This endpoint returns the products of the instrument corresponding to `instrument-id`. For example, the JSON response for
 
 ```
-http://api.hao.ucar.edu/v1/instruments/kcor/products
+http://api.mlso.ucar.edu/v1/instruments/kcor/products
 ```
 
-would be:
+is:
 
 ``` shell
-$ curl -sL "http://127.0.0.1:5000/v1/instruments/kcor/products" | python -m json.tool
+$ curl -sL "http://api.mlso.ucar.edu/v1/instruments/kcor/products" | python -m json.tool
 {
     "products": [
         {"description": "polarized brightness image", "id": "pb", "title": "pB"},
@@ -107,58 +109,62 @@ $ curl -sL "http://127.0.0.1:5000/v1/instruments/kcor/products" | python -m json
 
 ### `HTTP GET /instruments/<instrument-id>/products/<product-id>`
 
-Returns files of the instrument corresponding to `instrument-id` of product type corresponding to `product-id`. For example, the JSON response for
+This endpoint returns files of the instrument corresponding to `instrument-id` and of the product type corresponding to `product-id`. For example, the JSON response for
 
 ```
-http://api.hao.ucar.edu/v1/instruments/kcor/products/pb?start-date=2025-03-24T21:03:00&end-date=2025-03-24T21:04:00
+http://api.mlso.ucar.edu/v1/instruments/kcor/products/pb?start-date=2025-03-24T21:03:00&end-date=2025-03-24T21:04:00
 ```
 
-would be:
+is:
 
 ``` shell
-$ curl -sL "http://api.hao.ucar.edu/v1/instruments/kcor/products/pb?start-date=2025-03-24T21:03:00&end-date=2025-03-24T21:04:00" | python -m json.tool
+$ curl -sL "http://api.mlso.ucar.edu/v1/instruments/kcor/products/pb?start-date=2025-03-24T21:03:00&end-date=2025-03-24T21:04:00" | python -m json.tool
 {
     "end-date": "2025-03-24T21:04:00",
     "files": [
         {
             "date-obs": "2025-03-24T21:03:04",
             "filename": "20250324_210304_kcor_l2_pb.fts",
-            "filesize": 0,
+            "filesize": 2582027,
             "instrument": "kcor",
             "product": "pb",
-            "url": "http://127.0.0.1:5000/v1/download?obsday-id=10136&instrument=kcor&filename=20250324_210304_kcor_l2_pb.fts.gz"
+            "url": "http://api.mlso.ucar.edu/v1/download?obsday-id=10137&client=API&instrument=kcor&filename=20250324_210304_kcor_l2_pb.fts.gz"
         },
         {
             "date-obs": "2025-03-24T21:03:19",
             "filename": "20250324_210319_kcor_l2_pb.fts",
-            "filesize": 0,
+            "filesize": 2581064,
             "instrument": "kcor",
             "product": "pb",
-            "url": "http://127.0.0.1:5000/v1/download?obsday-id=10136&instrument=kcor&filename=20250324_210319_kcor_l2_pb.fts.gz"
+            "url": "http://api.mlso.ucar.edu/v1/download?obsday-id=10137&client=API&instrument=kcor&filename=20250324_210319_kcor_l2_pb.fts.gz"
         },
         {
             "date-obs": "2025-03-24T21:03:34",
             "filename": "20250324_210334_kcor_l2_pb.fts",
-            "filesize": 0,
+            "filesize": 2581461,
             "instrument": "kcor",
             "product": "pb",
-            "url": "http://127.0.0.1:5000/v1/download?obsday-id=10136&instrument=kcor&filename=20250324_210334_kcor_l2_pb.fts.gz"
+            "url": "http://api.mlso.ucar.edu/v1/download?obsday-id=10137&client=API&instrument=kcor&filename=20250324_210334_kcor_l2_pb.fts.gz"
         },
         {
             "date-obs": "2025-03-24T21:03:50",
             "filename": "20250324_210350_kcor_l2_pb.fts",
-            "filesize": 0,
+            "filesize": 2579818,
             "instrument": "kcor",
             "product": "pb",
-            "url": "http://127.0.0.1:5000/v1/download?obsday-id=10136&instrument=kcor&filename=20250324_210350_kcor_l2_pb.fts.gz"
+            "url": "http://api.mlso.ucar.edu/v1/download?obsday-id=10137&client=API&instrument=kcor&filename=20250324_210350_kcor_l2_pb.fts.gz"
         }
     ],
     "instrument": "kcor",
     "product": "pb",
     "start-date": "2025-03-24T21:03:00",
-    "total_filesize": 0
+    "total_filesize": 10324370
 }
 ```
+
+Note: The `filesize` and `total_filesize` cannot be relied on for all files currently. The `filesize` will sometimes return 0 for a file, which will then artificially make the `total_filesize` smaller. This will be updated in the future.
+
+The URL parameters available to filter the files are given in the table below.
 
 | Parameter | Description |
 | --------- | ----------- |
@@ -171,14 +177,14 @@ $ curl -sL "http://api.hao.ucar.edu/v1/instruments/kcor/products/pb?start-date=2
 
 The valid date formats are: "%Y-%m-%dT%H:%M:%S" or "%Y-%m-%d", e.g., "2025-01-01T10:30:00" or "2025-01-01". All date/times are in UT.
 
-Use the "url" field of the file results to download the given file. You must call the `/authenticate` endpoint with a registered username (email) before downloading, though.
+Use the "url" field of the file results gives a URL that can be used to download the given file. You must call the `/authenticate` endpoint with a registered username (email) before downloading, though. See below for how to register a username.
 
 ### `HTTP GET /authenticate`
 
 Before downloading a file, you must authenticate with a valid username. If you haven't registered already, go to `https://registration.hao.ucar.edu` first to register your email address (username). Then call the `authenticate` endpoint, for example, with
 
 ```
-http://api.hao.ucar.edu/v1/authenticate?username=user@domain.com
+http://api.mlso.ucar.edu/v1/authenticate?username=user@domain.com
 ```
 
 The JSON response for a registered username would be:
@@ -197,7 +203,7 @@ Or if the username is not found, the response will be a 404 NOT FOUND with the f
 }
 ```
 
-The response contains a "session" cookie in the header that must be passed back in the download URL GET requests. The cookie should look something like:
+The response contains a "session" cookie in the header that must be passed back in the download URL GET requests. The cookie will look something like:
 
 ```
 Set-Cookie: session=FrFClgPOPeNZVR-r44Yn5jVTILVZ-2cfWRh5ilsLbRQ; Expires=Fri, 25 Jul 2025 15:51:18 GMT; HttpOnly; Path=/
