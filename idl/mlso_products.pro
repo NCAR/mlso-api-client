@@ -29,7 +29,7 @@ function mlso_products, instrument, $
                         n_products=n_products
   compile_opt strictarr
 
-  _base_url = n_elements(base_url) gt 0 ? base_url : 'http://api.mlso.ucar.edu:5000'
+  _base_url = n_elements(base_url) gt 0 ? base_url : 'http://api.mlso.ucar.edu'
   _api_version = n_elements(api_version) gt 0L ? api_version : 'v1'
 
   own_url_object = 0B

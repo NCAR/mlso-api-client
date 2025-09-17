@@ -30,7 +30,7 @@ pro mlso_download_file, basename, url, username, $
                         verbose=verbose
   compile_opt strictarr
 
-  _base_url = n_elements(base_url) gt 0 ? base_url : 'http://api.mlso.ucar.edu:5000'
+  _base_url = n_elements(base_url) gt 0 ? base_url : 'http://api.mlso.ucar.edu'
   _api_version = n_elements(api_version) gt 0L ? api_version : 'v1'
 
   _output_dir = n_elements(output_dir) gt 0 ? output_dir : '.'
