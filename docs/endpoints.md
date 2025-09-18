@@ -184,14 +184,14 @@ Use the "url" field of the file results gives a URL that can be used to download
 Before downloading a file, you must authenticate with a valid username. If you haven't registered already, go to `https://registration.hao.ucar.edu` first to register your email address (username). Then call the `authenticate` endpoint, for example, with
 
 ```
-http://api.mlso.ucar.edu/v1/authenticate?username=user@domain.com
+http://api.mlso.ucar.edu/v1/authenticate?username=email@example.com
 ```
 
 The JSON response for a registered username would be:
 
 ``` JSON
 {
-  "message": "found username user@domain.com"
+  "message": "found username email@example.com"
 }
 ```
 
@@ -199,7 +199,7 @@ Or if the username is not found, the response will be a 404 NOT FOUND with the f
 
 ``` JSON
 {
-  "message": "username user@domain.com not found, sign up at https://registration.hao.ucar.edu"
+  "message": "username email@example.com not found, sign up at https://registration.hao.ucar.edu"
 }
 ```
 
