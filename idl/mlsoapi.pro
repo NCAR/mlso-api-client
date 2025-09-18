@@ -192,7 +192,8 @@ pro mlsoapi_download_files, url_object, instrument, product, username, $
                             start_date=start_date, $
                             end_date=end_date, $
                             carrington_rotation=carrington_rotation, $
-                            output_dir=output_dir
+                            output_dir=output_dir, $
+                            verbose=verbose
   compile_opt strictarr
 
   files_info = mlso_files(instrument, product, $
@@ -214,7 +215,8 @@ pro mlsoapi_download_files, url_object, instrument, product, username, $
     mlso_download_file, file.filename, file.url, username, $
                         output_dir=output_dir, $
                         base_url=base_url, $
-                        url_object=url_object
+                        url_object=url_object, $
+                        verbose=verbose
   endfor
 end
 
@@ -261,7 +263,8 @@ pro mlsoapi, instrument=instrument, $
              output_dir=output_dir, $
              username=username, $
              base_url=base_url, $
-             api_version=api_version
+             api_version=api_version, $
+             verbose=verbose
   compile_opt strictarr
 
   _base_url = n_elements(base_url) gt 0 ? base_url : 'http://api.mlso.ucar.edu'
@@ -288,7 +291,8 @@ pro mlsoapi, instrument=instrument, $
                                   start_date=start_date, $
                                   end_date=end_date, $
                                   carrington_rotation=carrington_rotation, $
-                                  output_dir=output_dir
+                                  output_dir=output_dir, $
+                                  verbose=verbose
         endif else begin
           mlsoapi_files, url_object, instrument, product, $
                          base_url=_base_url, $
@@ -308,23 +312,21 @@ end
 
 ; main-level example program
 
-;base_url = 'http://127.0.0.1:5000'
+; NOTE: set this to an email registered at: https://registration.hao.ucar.edu
+email = 'my.email@example.com'
 
-mlsoapi, base_url=base_url
-
-print
-
-mlsoapi, instrument='ucomp', base_url=base_url
+mlsoapi
 
 print
+mlsoapi, instrument='ucomp'
 
+print
+mlsoapi, instrument='ucomp', product='l2', $
+         wave_region='789', start_date='2025-01-01'
+
+print
 mlsoapi, instrument='ucomp', product='l2', $
          wave_region='789', start_date='2025-01-01', $
-         base_url=base_url
-
-mlsoapi, instrument='ucomp', product='l2', $
-         wave_region='789', start_date='2025-01-01', $
-         username='mgalloy@ucar.edu', /download, output_dir='data', $
-         base_url=base_url
+         username=email, /download, output_dir='data'
 
 end

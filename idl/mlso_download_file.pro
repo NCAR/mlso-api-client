@@ -62,11 +62,22 @@ pro mlso_download_file, basename, url, username, $
 
   ; we just want the "Cookie: name=value" of above, i.e.:
   ;   Cookie: session=FrFClgPOPeNZVR-r44Yn5jVTILVZ-2cfWRh5ilsLbRQ
-  cookie = strmid(cookie, 4, strpos(cookie, ';') - 4)
+  ; strlen('Set-Cookie: ') = 12
+  cookie = strmid(cookie, 12, strpos(cookie, ';') - 12)
+  cookie = 'Cookie: ' + cookie
 
-  url_object->setProperty, header=cookie
+  header = ['User-Agent: IDL', $
+            'Accept-Encoding: gzip, deflate, br, zstd', $
+            'Connection: keep-alive', $
+            cookie]
+
+  url_object->setProperty, header=header, proxy_authentication=3, verbose=1
   if (keyword_set(verbose)) then print, url
-  response = url_object->get(url=url, filename=filepath(basename, root=_output_dir))
+
+  sep = strpos(url, '?') eq -1 ? '?' : '&'
+  user_url = string(url, sep, username, format='%s%susername=%s')
+
+  response = url_object->get(url=user_url, filename=filepath(basename, root=_output_dir))
 
   if (own_url_object) then obj_destroy, url_object
 end
