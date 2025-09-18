@@ -3,8 +3,8 @@
 ; low-level libraries dealing with formulating the URLs in the webservice
 ; requests, making the requests, parsing JSON responses, etc.
 
-api_baseurl = 'http://127.0.0.1:5000'
-api_version = 'v1'
+;api_baseurl = 'http://127.0.0.1:5000'
+;api_version = 'v1'
 
 ; basic querying for exploration
 
@@ -30,9 +30,11 @@ mlsoapi, instrument='ucomp', product='l2', $
 ; given here must be registered with the HAO website at:
 ;
 ;   https://registration.hao.ucar.edu
+
+username = 'email@example.com'
 mlsoapi, instrument='ucomp', product='l2', $
          wave_region='789', start_date='2025-03-23', $
-         username='mgalloy@ucar.edu', /download, output_dir='data', $
+         username=username, /download, output_dir='data', $
          base_url=api_baseurl, api_version=api_version
 
 print
@@ -52,12 +54,22 @@ products_info = mlso_products('ucomp', base_url=api_baseurl, api_version=api_ver
 print, strjoin(products_info.products.id, ', '), format='UCoMP products: %s'
 help, products_info.products[0]
 
-files_info = mlso_files('ucomp', 'l2', wave_region='789', start_date='2025-03-23', base_url=api_baseurl, api_version=api_version)
+; Now find some UCoMP level 2 files in the 789 wave region, starting on
+; 2025-03-23.
+files_info = mlso_files('ucomp', 'l2', wave_region='789', $
+                        start_date='2025-03-23', $
+                        base_url=api_baseurl, api_version=api_version)
 files = files_info.files
 n_files = n_elements(files)
 for f = 0L, n_files - 1L do begin
   print, f + 1, n_files, files[f].filename, format='%d/%d: %s'
   print, files[f].url, format='     %s'
+endfor
+
+; Download the files found above.
+for f = 0L, n_elements(files_info.files) - 1L do begin
+  file = files_info.files[f]
+  mlso_download_file, file.filename, file.url, username, output_dir='data'
 endfor
 
 end
