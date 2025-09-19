@@ -21,6 +21,8 @@
 ;     version of the API to use
 ;   url_object : in, optional, type=IDLnetURL object
 ;     existing `IDLnetURL` object if available
+;   verbose : in, optional, type=boolean
+;     set to print log messages to the console
 ;-
 pro mlso_download_file, basename, url, username, $
                         output_dir=output_dir, $

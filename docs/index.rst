@@ -9,6 +9,7 @@ Welcome to mlso-api-client's documentation!
    endpoints
    usage
    mlso-api-client
+   idl-api
    contributing
    authors
    history
