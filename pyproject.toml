@@ -82,3 +82,9 @@ addopts = "--cov-report html:coverage_html --cov-report term-missing --cov-fail-
 [build-system]
 requires = ["setuptools >= 77.0.3"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["idl"]
+
+[tool.setuptools.package-data]
+mypkg = ["*.pro"]
