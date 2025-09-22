@@ -3,6 +3,8 @@
 This package contains Python and IDL clients for accessing MLSO data via the
 MLSO data web API.
 
+![Read the Docs](https://app.readthedocs.org/projects/mlso-api-client/badge/?version=latest)
+
 ## Installation
 
 ### Installing from PyPI
