@@ -5,6 +5,12 @@ Installation
 ============
 
 
+Note: Downloading files requires an email address registered at the
+`HAO website`_. Queries can be done without this email username.
+
+.. _HAO website: https://registration.hao.ucar.edu
+
+
 Stable release
 --------------
 
@@ -23,8 +29,8 @@ you through the process.
 .. _Python installation guide: http://docs.python-guide.org/en/latest/starting/installation/
 
 
-From sources
-------------
+From source
+-----------
 
 The sources for mlso-api-client can be downloaded from the `Github repo`_.
 
@@ -38,12 +44,14 @@ Or download the `tarball`_:
 
 .. code-block:: console
 
-    $ curl  -OL https://github.com/NCAR/mlso-api-client/tarball/master
+    $ curl -OL https://github.com/NCAR/mlso-api-client/archive/refs/heads/main.zip
+    $ unzip main.zip
 
-Once you have a copy of the source, you can install it with:
+Either way, once you have a copy of the source, you can install it with:
 
 .. code-block:: console
 
+    $ cd mlso-api-client  # or mlso-api-client-main if the zip was downloaded
     $ pip install .
 
 

@@ -27,7 +27,7 @@ that can be used in non-interactive programs.
                  verbose=verbose
 
 Query the MLSO database for instruments, products, and files available. Files
-can optionally be downloaded if the email username passed via the `USERNAME`
+can optionally be downloaded if the email username passed via the ``USERNAME``
 keyword has been registered with the `HAO website`_.
 
 .. _HAO website: https://registration.hao.ucar.edu
@@ -47,9 +47,9 @@ Keywords
 :base_url: ``in, required, type=string, default="http://api.mlso.ucar.edu"`` base URL for the MLSO API server
 :api_version: ``in, optional, type=string, default="v1"`` version of the API to use
 
+
 Programmatic interface
 ----------------------
-
 
 ``mlso_instruments``
 ^^^^^^^^^^^^^^^^^^^^

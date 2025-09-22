@@ -157,8 +157,7 @@ match a set of filters.
 
 The files can be downloaded, though the ``authenticate`` routine must be called
 before starting to download files. An email address must be registered with the
-HAO website to download files. Use the `registration page`_ mentioned previously to
-register one.
+HAO website to download files. Use the `registration page`_ to register one.
 
 .. _registration page: https://registration.hao.ucar.edu
 
@@ -181,9 +180,11 @@ register one.
 Command-line interface
 ----------------------
 
-.. code-block::
+A Unix command-line interface is also provided:
 
-    ~$ mlsoapi --help
+.. code-block:: console
+
+    $ mlsoapi --help
     usage: mlsoapi [-h] [-v] [-u BASE_URL] [--verbose] [-q] {instruments,products,files} ...
 
     MLSO API command line interface (mlso-api-client 0.3.2)
@@ -203,7 +204,9 @@ Command-line interface
     --verbose             output warnings
     -q, --quiet           surpress informational messages
 
-.. code-block::
+To query for the available instruments and basic metadata about each one:
+
+.. code-block:: console
 
     $ mlsoapi instruments
     ID       Instrument name                              Dates available
@@ -211,7 +214,9 @@ Command-line interface
     kcor     COSMO K-Coronagraph (KCor)                   2013-09-30...2025-03-24
     ucomp    Upgraded Coronal Multi-Polarimeter (UCoMP)   2021-07-15...2025-03-24
 
-.. code-block::
+To show the product for a given instrument, use the "products" sub-command:
+
+.. code-block:: console
 
     $ mlsoapi products --instrument ucomp
     ID            Title                  Description
@@ -228,7 +233,43 @@ Command-line interface
     polarization  Polarization           level 2 polarization products
     all           All                    all products
 
-.. code-block::
+To list files matching a set of filters, use the "files" sub-command. To show
+the available filters, use the ``--help`` option:
+
+.. code-block:: console
+
+    $ mlsoapi files --help
+    usage: mlsoapi files [-h] [-i INSTRUMENT] [-p PRODUCT] [--wave-region WAVE_REGION]
+                        [--obs-plan OBS_PLAN] [-s START_DATE] [-e END_DATE]
+                        [-c CARRINGTON_ROTATION] [--every EVERY] [-d] [-u USERNAME]
+                        [-o OUTPUT_DIR]
+
+    options:
+    -h, --help            show this help message and exit
+    -i INSTRUMENT, --instrument INSTRUMENT
+                            instrument
+    -p PRODUCT, --product PRODUCT
+                            product
+    --wave-region WAVE_REGION
+                            wave region, e.g., 1074, 1079, etc.
+    --obs-plan OBS_PLAN   observing plan: synoptic or waves
+    -s START_DATE, --start-date START_DATE
+                            start date
+    -e END_DATE, --end-date END_DATE
+                            end date
+    -c CARRINGTON_ROTATION, --carrington-rotation CARRINGTON_ROTATION
+                            Carrington Rotation number
+    --every EVERY         time to choose 1 file from
+    -d, --download        download the displayed files
+    -u USERNAME, --username USERNAME
+                            email already registered at HAO website
+    -o OUTPUT_DIR, --output-dir OUTPUT_DIR
+                            output directory for downloaded files
+
+For example, to show the UCoMP level 2 files in the 789 nm wave region after
+2025-03-23, do:
+
+.. code-block:: console
 
     $ mlsoapi files --instrument ucomp --product l2 --wave-region 789 --start-date 2025-03-23
     Date/time            Instrument Product       Filesize   Filename
@@ -238,7 +279,10 @@ Command-line interface
     -------------------- ---------- ------------- ---------- --------------------------------
     2 files                                          60.1 MB
 
-.. code-block::
+To download the above files, use the ``--download`` option along with a
+registered email address as the argument to ``--username``:
+
+.. code-block:: console
 
     $ mlsoapi files --instrument ucomp --product l2 --wave-region 789 --start-date 2025-03-23 \
     > --download --username email@example.com
@@ -293,7 +337,7 @@ keyword:
     all           All                    all products
 
 To list the files available for UCoMP instrument's level 2 product with wave
-region 789 after 2025-01-1, specify both the `INSTRUMENT` and `PRODUCT`
+region 789 after 2025-01-1, specify both the ``INSTRUMENT`` and ``PRODUCT``
 keywords, along with any other desired filters:
 
 .. code-block:: IDL
@@ -307,10 +351,11 @@ keywords, along with any other desired filters:
     2 files                                           60.1 M
 
 
-To download the above listed files into the "data" directory. The email username
-given here must be registered with the HAO website at::
+To download the above listed files into the "data" directory set the
+``DOWNLOAD`` keyword and specify a username with the ``USERNAME`` keyword. The
+email username given here must be registered with the `HAO website`_.
 
-    https://registration.hao.ucar.edu
+.. _HAO website: https://registration.hao.ucar.edu
 
 .. code-block:: IDL
 
@@ -323,7 +368,10 @@ given here must be registered with the HAO website at::
 API for programmatically retrieving results
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Retrieve information about the available instruments.
+There is also a set of IDL routines to programmatically make queries and
+download data via the API.
+
+For example, to retrieve information about the available instruments, do:
 
 .. code-block:: IDL
 
@@ -342,7 +390,7 @@ The fields available for each instrument:
        START_DATE      STRING    '2013-09-30T18:57:54'
        END_DATE        STRING    '2025-03-24T21:04:20'
 
-Retrieve information about the products for UCoMP.
+To retrieve information about the products available for UCoMP:
 
 .. code-block:: IDL
 
@@ -368,6 +416,9 @@ Retrieve information about the products for UCoMP.
         http://api.mlso.ucar.edu/v1/download?obsday-id=10136&client=idl&instrument=ucomp&filename=20250323.190336.ucomp.789.l2.fts
     2/2: 20250324.200652.ucomp.789.l2.fts
         http://api.mlso.ucar.edu/v1/download?obsday-id=10137&client=idl&instrument=ucomp&filename=20250324.200652.ucomp.789.l2.fts
+
+To download the above files, use ``MLSO_DOWNLOAD_FILE`` with a registered
+username:
 
 .. code-block:: IDL
 

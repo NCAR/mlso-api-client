@@ -10,7 +10,7 @@ interface is typically used like::
     'support': 'mlso_data_requests@ucar.edu',
     'version': '0.3.1'}
 
-The command-line interface, ``mlsoapi``, is also available::
+The Unix command-line interface, ``mlsoapi``, is also available::
 
     usage: mlsoapi [-h] [-v] [-u BASE_URL] [--verbose] [-q] {instruments,products,files} ...
 

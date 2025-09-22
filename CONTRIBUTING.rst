@@ -19,9 +19,9 @@ Report bugs at https://github.com/NCAR/mlso-api-client/issues.
 
 If you are reporting a bug, please include:
 
-* Your operating system name and version.
-* Any details about your local setup that might be helpful in troubleshooting.
-* Detailed steps to reproduce the bug.
+* your operating system name and version,
+* any details about your local setup that might be helpful in troubleshooting, and
+* detailed steps to reproduce the bug.
 
 Fix Bugs
 ~~~~~~~~
@@ -49,10 +49,9 @@ The best way to send feedback is to file an issue at https://github.com/NCAR/mls
 
 If you are proposing a feature:
 
-* Explain in detail how it would work.
-* Keep the scope as narrow as possible, to make it easier to implement.
-* Remember that this is a volunteer-driven project, and that contributions
-  are welcome :)
+* explain in detail how it would work,
+* keep the scope as narrow as possible, to make it easier to implement, and
+* remember that contributions are welcome. :)
 
 Get Started!
 ------------
@@ -83,7 +82,7 @@ Ready to contribute? Here's how to set up `mlso-api-client` for local developmen
     $ python setup.py test or py.test
     $ tox
 
-   To get flake8 and tox, just pip install them into your virtualenv.
+   To get flake8 and tox, just ``pip install`` them into your virtualenv.
 
 6. Commit your changes and push your branch to GitHub::
 
@@ -101,8 +100,8 @@ Before you submit a pull request, check that it meets these guidelines:
 1. The pull request should include tests.
 2. If the pull request adds functionality, the docs should be updated. Put
    your new functionality into a function with a docstring, and add the
-   feature to the list in README.rst.
-3. The pull request should work for Python 3.5 and 3.6, and for PyPy. Check
+   feature to the list in ``CHANGELOG.md``.
+3. The pull request should work for Python 3.7+, and for PyPy. Check
    https://travis-ci.org/NCAR/mlso-api-client/pull_requests
    and make sure that the tests pass for all supported Python versions.
 
@@ -111,18 +110,13 @@ Tips
 
 To run a subset of tests::
 
-$ py.test tests/test_parser.py
+.. code-block:: console
+
+    $ py.test tests/test_client.py
 
 
 Deploying
 ---------
 
-A reminder for the maintainers on how to deploy.
-Make sure all your changes are committed (including an entry in HISTORY.rst).
-Then run::
-
-$ bumpversion patch # possible: major / minor / patch
-$ git push
-$ git push --tags
-
-Travis will then deploy to PyPI if tests pass.
+A reminder for the maintainers on how to deploy. Make sure all your changes are
+committed (including an entry in ``CHANGELOG.md``).

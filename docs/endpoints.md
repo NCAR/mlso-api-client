@@ -1,6 +1,7 @@
 # API Endpoints
 
-The endpoints for the MLSO data API are listed and discussed below. They can be accessed via any client capable of making a GET request.
+The endpoints for the MLSO data API are listed and discussed below. They can be
+accessed via any client capable of making a GET request.
 
 The MLSO data API is hosted at:
 
@@ -8,7 +9,9 @@ The MLSO data API is hosted at:
 http://api.mlso.ucar.edu/
 ```
 
-There could potentially be multiple API versions, so we will call this initial API "v1", currently the only API version. The base URL for all of the following endpoints is:
+There could potentially be multiple API versions, as it changes in the future.
+The current version is "v1", currently the only API version. The base URL for
+all of the following endpoints is:
 
 ```
 http://api.mlso.ucar.edu/v1
@@ -20,7 +23,7 @@ http://api.mlso.ucar.edu/v1
 
 Basic information about the server can be found from the `about` endpoint:
 
-``` shell
+``` console
 $ curl -s "http://api.mlso.ucar.edu/v1/about" | python -m json.tool
 {
   "documentation": "https://mlso-api-client.readthedocs.io/en/latest/",
@@ -33,7 +36,9 @@ $ curl -s "http://api.mlso.ucar.edu/v1/about" | python -m json.tool
 
 ### `HTTP GET /instruments`
 
-Use this to list the available instruments. The result will be a JSON list of string identifiers for the available instruments. For example, the current JSON response for
+Use this to list the available instruments. The result will be a JSON list of
+string identifiers for the available instruments. For example, the current JSON
+response for
 
 ```
 http://api.mlso.ucar.edu/v1/instruments
@@ -41,7 +46,7 @@ http://api.mlso.ucar.edu/v1/instruments
 
 is:
 
-``` shell
+``` console
 $ curl -s "http://api.mlso.ucar.edu/v1/instruments" | python -m json.tool
 [
     "ucomp",
@@ -49,11 +54,14 @@ $ curl -s "http://api.mlso.ucar.edu/v1/instruments" | python -m json.tool
 ]
 ```
 
-The names listed are the "instrument IDs" that are used in other endpoints to identify instruments. Data from more instruments will be made available in the future.
+The names listed are the "instrument IDs" that are used in other endpoints to
+identify instruments. Data from more instruments will be made available in the
+future.
 
 ### `HTTP GET /instruments/<instrument-id>`
 
-This endpoint provides more information about the instrument corresponding to `instrument-id`. For example, the JSON response for
+This endpoint provides more information about the instrument corresponding to
+`instrument-id`. For example, the JSON response for
 
 ```
 http://api.mlso.ucar.edu/v1/instruments/kcor
@@ -61,7 +69,7 @@ http://api.mlso.ucar.edu/v1/instruments/kcor
 
 is:
 
-``` shell
+``` console
 $ curl -sL "http://api.mlso.ucar.edu/v1/instruments/kcor" | python -m json.tool
 {
     "dates": {
@@ -78,7 +86,8 @@ The `end-date` value will change as new data is collected.
 
 ### `HTTP GET /instruments/<instrument-id>/products`
 
-This endpoint returns the products of the instrument corresponding to `instrument-id`. For example, the JSON response for
+This endpoint returns the products of the instrument corresponding to
+`instrument-id`. For example, the JSON response for
 
 ```
 http://api.mlso.ucar.edu/v1/instruments/kcor/products
@@ -86,7 +95,7 @@ http://api.mlso.ucar.edu/v1/instruments/kcor/products
 
 is:
 
-``` shell
+``` console
 $ curl -sL "http://api.mlso.ucar.edu/v1/instruments/kcor/products" | python -m json.tool
 {
     "products": [
@@ -109,7 +118,9 @@ $ curl -sL "http://api.mlso.ucar.edu/v1/instruments/kcor/products" | python -m j
 
 ### `HTTP GET /instruments/<instrument-id>/products/<product-id>`
 
-This endpoint returns files of the instrument corresponding to `instrument-id` and of the product type corresponding to `product-id`. For example, the JSON response for
+This endpoint returns files of the instrument corresponding to `instrument-id`
+and of the product type corresponding to `product-id`. For example, the JSON
+response for
 
 ```
 http://api.mlso.ucar.edu/v1/instruments/kcor/products/pb?start-date=2025-03-24T21:03:00&end-date=2025-03-24T21:04:00
@@ -117,7 +128,7 @@ http://api.mlso.ucar.edu/v1/instruments/kcor/products/pb?start-date=2025-03-24T2
 
 is:
 
-``` shell
+``` console
 $ curl -sL "http://api.mlso.ucar.edu/v1/instruments/kcor/products/pb?start-date=2025-03-24T21:03:00&end-date=2025-03-24T21:04:00" | python -m json.tool
 {
     "end-date": "2025-03-24T21:04:00",
@@ -162,7 +173,10 @@ $ curl -sL "http://api.mlso.ucar.edu/v1/instruments/kcor/products/pb?start-date=
 }
 ```
 
-Note: The `filesize` and `total_filesize` cannot be relied on for all files currently. The `filesize` will sometimes return 0 for a file, which will then artificially make the `total_filesize` smaller. This will be updated in the future.
+Note: The `filesize` and `total_filesize` cannot be relied on for all files
+currently. The `filesize` will sometimes return 0 for a file, which will then
+artificially make the `total_filesize` smaller. This will be updated in the
+future.
 
 The URL parameters available to filter the files are given in the table below.
 
@@ -175,13 +189,20 @@ The URL parameters available to filter the files are given in the table below.
 | `wave‑region` | Return only files for the given wave region (UCoMP only). |
 | `obs‑plan` | Return only files matching the given observing plan, e.g., "waves" or "synoptic" (UCoMP only). |
 
-The valid date formats are: "%Y-%m-%dT%H:%M:%S" or "%Y-%m-%d", e.g., "2025-01-01T10:30:00" or "2025-01-01". All date/times are in UT.
+The valid date formats are: "%Y-%m-%dT%H:%M:%S" or "%Y-%m-%d", e.g.,
+"2025-01-01T10:30:00" or "2025-01-01". All date/times are in UT.
 
-Use the "url" field of the file results gives a URL that can be used to download the given file. You must call the `/authenticate` endpoint with a registered username (email) before downloading, though. See below for how to register a username.
+Use the "url" field of the file results gives a URL that can be used to download
+the given file. You must call the `/authenticate` endpoint with a registered
+username (email) before downloading, though. See below for how to register a
+username.
 
 ### `HTTP GET /authenticate`
 
-Before downloading a file, you must authenticate with a valid username. If you haven't registered already, go to `https://registration.hao.ucar.edu` first to register your email address (username). Then call the `authenticate` endpoint, for example, with
+Before downloading a file, you must authenticate with a valid username. If you
+haven't registered already, go to `https://registration.hao.ucar.edu` first to
+register your email address (username). Then call the `authenticate` endpoint,
+for example, with
 
 ```
 http://api.mlso.ucar.edu/v1/authenticate?username=email@example.com
