@@ -4,15 +4,17 @@
 Installation
 ============
 
-
 Note: Downloading files requires an email address registered at the
 `HAO website`_. Queries can be done without this email username.
 
 .. _HAO website: https://registration.hao.ucar.edu
 
 
+Python
+------
+
 Stable release
---------------
+^^^^^^^^^^^^^^
 
 To install mlso-api-client, run this command in your terminal:
 
@@ -30,7 +32,7 @@ you through the process.
 
 
 From source
------------
+^^^^^^^^^^^
 
 The sources for mlso-api-client can be downloaded from the `Github repo`_.
 
@@ -57,3 +59,11 @@ Either way, once you have a copy of the source, you can install it with:
 
 .. _Github repo: https://github.com/NCAR/mlso-api-client
 .. _tarball: https://github.com/NCAR/mlso-api-client/tarball/master
+
+
+IDL
+---
+
+Follow the instructions above for obtaining the source code, either the
+``git clone`` or ``curl`` command, then put the ``idl`` subdirectory in your
+IDL path via the Workbench or updating the ``IDL_PATH`` environment variable..
