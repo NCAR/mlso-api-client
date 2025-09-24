@@ -85,6 +85,7 @@ release: dist ## package and upload a release
 
 dist: clean ## builds source and wheel package
 	python -m build
+	twine check dist/*
 
 install: clean ## install the package to the active Python's site-packages
 	pip install -e .[dev]
