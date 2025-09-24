@@ -186,7 +186,7 @@ The URL parameters available to filter the files are given in the table below.
 | `end‑date` | Return only files before the "end-date". |
 | `cr` | Return only files matching Carrington Rotation number "cr". |
 | `every` | Return only a single file for every time period matching "every". The recognized time periods are second, minute, hour, day, week, month, quarter, or year (optionally ending in "s"). This parameter is an integer followed by one of these time periods, e.g., `every=2hours`, `every=1day`, or `every=12hours`. |
-| `wave‑region` | Return only files for the given wave region (UCoMP only). |
+| `wave‑region` | Return only files for the given wave region (UCoMP only). Valid values are "637", "706", "789", 1074", "1079". |
 | `obs‑plan` | Return only files matching the given observing plan, e.g., "waves" or "synoptic" (UCoMP only). |
 
 The valid date formats are: "%Y-%m-%dT%H:%M:%S" or "%Y-%m-%d", e.g.,

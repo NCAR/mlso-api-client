@@ -415,6 +415,7 @@ def files(
                     - ``every=1day``, or
                     - ``every=12hours``.
     ``wave‑region`` Return only files for the given wave region (UCoMP only).
+                    Valid values are "637", "706", "789", 1074", "1079".
     ``obs‑plan``    Return only files matching the given observing plan, e.g.:
 
                     - "waves"

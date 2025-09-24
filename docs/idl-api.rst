@@ -37,7 +37,7 @@ Keywords
 
 :instrument: ``in, required, type=string`` instrument ID to find the files of
 :product: ``in, required, type=string`` product ID to find the files of
-:wave_region: ``in, optional, type=string`` wave region of files to return
+:wave_region: ``in, optional, type=string`` wave region of files to return, valid values are "637", "706", "789", 1074", "1079"
 :start_date: ``in, optional, type=string`` start date to begin looking for files from
 :end_date: ``in, optional, type=string`` end date to end looking for files to
 :carrington_rotation: ``in, optional, type=integer`` Carrington Rotation number of files to return
@@ -146,7 +146,7 @@ Keywords
 """"""""
 
 :n_files: ``out, optional, type=long`` set to a named variable to retrieve the number of files
-:wave_region: ``in, optional, type=string`` wave region of files to return
+:wave_region: ``in, optional, type=string`` wave region of files to return, valid values are "637", "706", "789", 1074", "1079"
 :start_date: ``in, optional, type=string`` start date to begin looking for files from
 :end_date: ``in, optional, type=string`` end date to end looking for files to
 :carrington_rotation: ``in, optional, type=integer`` Carrington Rotation number of files to return
