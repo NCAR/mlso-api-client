@@ -6,6 +6,8 @@ orbs:
 jobs:
   build_and_test: # this can be any name you choose
     executor: python/default # use the default executor defined within the orb
+    docker:
+      - image: cimg/python:3.13.7
     steps:
       - checkout # checkout source code
       - run:
