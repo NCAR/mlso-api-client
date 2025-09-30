@@ -719,7 +719,9 @@ def main():
     products_parser.add_argument("-i", "--instrument", help="instrument", default=None)
     products_parser.set_defaults(func=_products, parser=products_parser)
 
-    files_parser = subparsers.add_parser("files", help="MLSO data files")
+    files_parser = subparsers.add_parser(
+        "files", help="data files for given instrument/product"
+    )
     files_parser.add_argument("-i", "--instrument", help="instrument", default=None)
     files_parser.add_argument("-p", "--product", help="product", default=None)
     files_parser.add_argument(
