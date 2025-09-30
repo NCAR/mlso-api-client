@@ -713,7 +713,9 @@ def main():
     instruments_parser = subparsers.add_parser("instruments", help="MLSO instruments")
     instruments_parser.set_defaults(func=_instruments, parser=instruments_parser)
 
-    products_parser = subparsers.add_parser("products", help="MLSO instruments")
+    products_parser = subparsers.add_parser(
+        "products", help="products for given instrument"
+    )
     products_parser.add_argument("-i", "--instrument", help="instrument", default=None)
     products_parser.set_defaults(func=_products, parser=products_parser)
 
