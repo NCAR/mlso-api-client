@@ -22,7 +22,7 @@ def test_products(base_url, api_version, username):
         "ucomp", base_url=base_url, api_version=api_version
     )
     ucomp_products = ucomp_products_response["products"]
-    assert len(ucomp_products) == 11  # 10 UCoMP products + "all"
+    assert len(ucomp_products) == 9  # 8 UCoMP products + "all"
     for p in ucomp_products:
         assert "id" in p
         assert "title" in p
@@ -32,7 +32,7 @@ def test_products(base_url, api_version, username):
         "kcor", base_url=base_url, api_version=api_version
     )
     kcor_products = kcor_products_response["products"]
-    assert len(kcor_products) == 13  # 12 KCor products + "all"
+    assert len(kcor_products) == 12  # 11 KCor products + "all"
     for p in kcor_products:
         assert "id" in p
         assert "title" in p
