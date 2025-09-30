@@ -40,7 +40,7 @@ You can either clone the public repository:
 
 .. code-block:: console
 
-    $ git clone git://github.com/NCAR/mlso-api-client
+    $ git clone https://github.com/NCAR/mlso-api-client.git
 
 Or download the `tarball`_:
 
