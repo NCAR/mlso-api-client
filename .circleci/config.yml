@@ -12,7 +12,7 @@ jobs:
           name: Install dependencies from pyproject.toml
           command: |
             pip install .
-            pip install .[test]
+            pip install .[dev]
       - run:
           name: Run tests
           command: python -m pytest
