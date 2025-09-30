@@ -8,8 +8,11 @@ jobs:
     executor: python/default # use the default executor defined within the orb
     steps:
       - checkout # checkout source code
-      - python/install-packages:
-          pkg-manager: pip
+      - run:
+          name: Install dependencies from pyproject.toml
+          command: |
+            pip install .
+            pip install .[test]
       - run:
           name: Run tests
           command: python -m pytest
