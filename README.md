@@ -3,7 +3,7 @@
 This package contains Python and IDL clients for accessing MLSO data via the
 MLSO data web API.
 
-![Read the Docs](https://app.readthedocs.org/projects/mlso-api-client/badge/?version=latest)
+[![Read the Docs](https://app.readthedocs.org/projects/mlso-api-client/badge/?version=latest)](https://mlso-api-client.readthedocs.io/en/latest/)
 [![CircleCI](https://dl.circleci.com/status-badge/img/gh/NCAR/mlso-api-client/tree/main.svg?style=shield)](https://dl.circleci.com/status-badge/redirect/gh/NCAR/mlso-api-client/tree/main)
 
 ## Installation
