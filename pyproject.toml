@@ -1,15 +1,15 @@
 [project]
 name = "mlso-api-client"
-version = "0.3.3"
+version = "0.3.4"
 description = "Python package providing a client to access Mauna Loa Solar Observatory (MLSO) data"
 authors = [
   { name="Michael Galloy" },
   { name="Michael Galloy", email="mgalloy@ucar.edu" },
 ]
-license = "BSD-3-Clause"
+license = "MIT"
 license-files = ["LICENSE"]
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.9"
 # see classifiers at https://pypi.org/classifiers/
 classifiers = [
   "Development Status :: 4 - Beta",
@@ -55,7 +55,7 @@ mlsoapi = "mlso.api:client.main"
 
 [tool.black]
 line-length = 88
-target-version = ['py37']
+target-version = ['py39']
 include = '\.pyi?$'
 exclude = '''
 
