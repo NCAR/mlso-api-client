@@ -1,8 +1,9 @@
 [project]
 name = "mlso-api-client"
-version = "0.3.2"
-description = "Python package providing a client to access MLSO data"
+version = "0.3.3"
+description = "Python package providing a client to access Mauna Loa Solar Observatory (MLSO) data"
 authors = [
+  { name="Michael Galloy" },
   { name="Michael Galloy", email="mgalloy@ucar.edu" },
 ]
 license = "BSD-3-Clause"
