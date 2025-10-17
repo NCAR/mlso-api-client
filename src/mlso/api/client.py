@@ -733,7 +733,11 @@ def main():
     files_parser.add_argument("-s", "--start-date", help="start date", default=None)
     files_parser.add_argument("-e", "--end-date", help="end date", default=None)
     files_parser.add_argument(
-        "-c", "--carrington-rotation", help="Carrington Rotation number", default=None
+        "-c",
+        "--carrington-rotation",
+        "--cr",
+        help="Carrington Rotation number",
+        default=None,
     )
     files_parser.add_argument(
         "--every", help="time to choose 1 file from", default=None
