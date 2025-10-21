@@ -116,20 +116,52 @@ $ curl -sL "http://api.mlso.ucar.edu/v1/instruments/kcor/products" | python -m j
 }
 ```
 
+
 ### `HTTP GET /instruments/<instrument-id>/products/<product-id>`
+
+This endpoint returns metadata for the product type corresponding to
+`product-id` of the instrument corresponding to `instrument-id`. For example,
+the JSON response for
+
+```
+http://api.mlso.ucar.edu/v1/instruments/kcor/products/pb
+```
+
+is:
+
+``` console
+$ curl -sL "http://api.mlso.ucar.edu/v1/instruments/kcor/products/pb" | python -m json.tool
+{
+    "description": "polarized brightness image",
+    "filters": [
+        "start-date",
+        "end-date",
+        "cr",
+        "every"
+    ],
+    "formats": [
+        "fits"
+    ],
+    "id": "pb",
+    "title": "pB"
+}
+```
+
+
+### `HTTP GET /instruments/<instrument-id>/products/<product-id>/files`
 
 This endpoint returns files of the instrument corresponding to `instrument-id`
 and of the product type corresponding to `product-id`. For example, the JSON
 response for
 
 ```
-http://api.mlso.ucar.edu/v1/instruments/kcor/products/pb?start-date=2025-03-24T21:03:00&end-date=2025-03-24T21:04:00
+http://api.mlso.ucar.edu/v1/instruments/kcor/products/pb/files?start-date=2025-03-24T21:03:00&end-date=2025-03-24T21:04:00
 ```
 
 is:
 
 ``` console
-$ curl -sL "http://api.mlso.ucar.edu/v1/instruments/kcor/products/pb?start-date=2025-03-24T21:03:00&end-date=2025-03-24T21:04:00" | python -m json.tool
+$ curl -sL "http://api.mlso.ucar.edu/v1/instruments/kcor/products/pb/files?start-date=2025-03-24T21:03:00&end-date=2025-03-24T21:04:00" | python -m json.tool
 {
     "end-date": "2025-03-24T21:04:00",
     "files": [

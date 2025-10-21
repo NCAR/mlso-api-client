@@ -426,7 +426,7 @@ def files(
 
     Can raise a ``ServerError`` if there is a problem with the web request.
     """
-    url = f"{base_url}/{api_version}/instruments/{instrument}/products/{product}"
+    url = f"{base_url}/{api_version}/instruments/{instrument}/products/{product}/files"
 
     if len(filters) > 0:
         url += "?" + "&".join([f"{f}={filters[f]}" for f in filters])
@@ -710,6 +710,11 @@ def main():
 
     subparsers = parser.add_subparsers(help="sub-command help")
 
+    about_parser = subparsers.add_parser(
+        "about", help="Information about the MLSO API server"
+    )
+    about_parser.set_defaults(func=_about, parser=about_parser)
+
     instruments_parser = subparsers.add_parser("instruments", help="MLSO instruments")
     instruments_parser.set_defaults(func=_instruments, parser=instruments_parser)
 
@@ -756,7 +761,9 @@ def main():
     # parse args and call appropriate sub-command
     args = parser.parse_args()
 
-    if args.verbose:
+    # don't print "about" info, if the sub-command is "about" since it would be
+    # printed twice in that case
+    if args.verbose and args.func != _about:
         _about(args)
         print()
 

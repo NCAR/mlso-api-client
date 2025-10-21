@@ -61,7 +61,7 @@ function mlso_files, instrument, product, $
   endif
 
   files_url = string(_base_url, _api_version, instrument, product, $
-                     format='%s/%s/instruments/%s/products/%s')
+                     format='%s/%s/instruments/%s/products/%s/files')
   filters = !null
   if (n_elements(wave_region) gt 0L) then begin
     filters = [filters, string(wave_region, format='wave-region=%s')]
