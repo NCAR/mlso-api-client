@@ -5,6 +5,8 @@ MLSO data web API.
 
 [![Read the Docs](https://app.readthedocs.org/projects/mlso-api-client/badge/?version=latest)](https://mlso-api-client.readthedocs.io/en/latest/)
 [![CircleCI](https://dl.circleci.com/status-badge/img/gh/NCAR/mlso-api-client/tree/main.svg?style=shield)](https://dl.circleci.com/status-badge/redirect/gh/NCAR/mlso-api-client/tree/main)
+[![Version](https://img.shields.io/pypi/v/mlso-api-client.svg)](https://pypi.org/project/mlso-api-client/)
+![Status](https://img.shields.io/pypi/status/mlso-api-client.svg)
 
 ## Installation
 
