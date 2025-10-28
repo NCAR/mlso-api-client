@@ -49,6 +49,7 @@ import tqdm
 from . import __version__
 
 BASE_URL = "http://api.mlso.ucar.edu"
+LOCAL_BASE_URL = "http://127.0.0.1:5000"
 API_VERSION = "v1"
 SIGNUP_URL = "https://registration.hao.ucar.edu"
 
@@ -460,8 +461,9 @@ def _about(args):
     """Handle printing the ``/about`` endpoint results for the command line
     interface.
     """
+    base_url = LOCAL_BASE_URL if args.local else args.base_url
     try:
-        about_response = about(args.base_url, verbose=args.verbose)
+        about_response = about(base_url, verbose=args.verbose)
         server_version = about_response["version"]
         documentation_url = about_response["documentation"]
         print(f"server version: {server_version}, client version: {__version__}")
@@ -474,8 +476,9 @@ def _instruments(args):
     """Handle printing the ``/instruments`` endpoint results for the command line
     interface.
     """
+    base_url = LOCAL_BASE_URL if args.local else args.base_url
     try:
-        instruments_response = instruments(args.base_url, verbose=args.verbose)
+        instruments_response = instruments(base_url, verbose=args.verbose)
     except ServerError as e:
         print(e)
         return
@@ -496,9 +499,10 @@ def _products(args):
     """Handle printing the ``/instruments/{instrument}/products`` endpoint
     results for the command line interface.
     """
+    base_url = LOCAL_BASE_URL if args.local else args.base_url
     try:
         products_response = products(
-            args.instrument, base_url=args.base_url, verbose=args.verbose
+            args.instrument, base_url=base_url, verbose=args.verbose
         )
     except ServerError as e:
         print(e)
@@ -584,6 +588,8 @@ def _files(args):
     """
     filters = {}
 
+    base_url = LOCAL_BASE_URL if args.local else args.base_url
+
     if args.wave_region is not None:
         filters["wave-region"] = args.wave_region
 
@@ -607,7 +613,7 @@ def _files(args):
             args.instrument,
             args.product,
             filters,
-            base_url=args.base_url,
+            base_url=base_url,
             verbose=args.verbose,
             client="cli",
         )
@@ -627,10 +633,12 @@ def _files(args):
         print(f"End date   : {end_date}")
         print(f"Filesize   : {filesize}")
 
+    max_productname_len = 15
+
     filelist = files_response["files"]
     if args.download:
         _download_files(
-            args.base_url,
+            base_url,
             filelist,
             Path(args.output_dir),
             args.username,
@@ -638,25 +646,35 @@ def _files(args):
             quiet=args.quiet,
         )
     else:
+        product_sep = "-" * max_productname_len
         if len(filelist) > 0:
             if args.verbose:
                 print()
             max_filename_len = max([len(f["filename"]) for f in filelist])
+            max_filename_len = max(max_filename_len, len("Filename"))
             print(
-                f"{'Date/time':20s} {'Instrument':10s} {'Product':13s} {'Filesize':10s} {'Filename'}"
+                f"{'Date/time':20s} {'Instrument':10s} {'Product':{max_productname_len}s} {'Filesize':10s} {'Filename'}"
             )
             print(
-                f"{'-' * 20} {'-' * 10} {'-' * 13} {'-' * 10} {'-' * max_filename_len}"
+                f"{'-' * 20} {'-' * 10} {product_sep} {'-' * 10} {'-' * max_filename_len}"
             )
             total_filesize = 0
         for f in filelist:
             total_filesize += f["filesize"]
+            instrument = f["instrument"]
+            product_name = f["product"]
+            product_name = (
+                product_name
+                if len(product_name) <= max_productname_len
+                else f"{product_name[:max_productname_len-2]}.."
+            )
+            filesize = _sizeof_fmt(f["filesize"]) if instrument != "events" else ""
             print(
-                f"{f['date-obs']:20s} {f['instrument']:10s} {f['product']:13s} {_sizeof_fmt(f['filesize']):>10s} {f['filename']}"
+                f"{f['date-obs']:20s} {instrument:10s} {product_name:13s} {filesize:>10s} {f['filename']}"
             )
         if len(filelist) > 1:
             print(
-                f"{'-' * 20} {'-' * 10} {'-' * 13} {'-' * 10} {'-' * max_filename_len}"
+                f"{'-' * 20} {'-' * 10} {product_sep} {'-' * 10} {'-' * max_filename_len}"
             )
             n_files = f"{len(filelist)} files"
             print(f"{n_files:45s} {_sizeof_fmt(total_filesize):>10s} {''}")
@@ -702,6 +720,9 @@ def main():
 
     parser.add_argument(
         "-u", "--base-url", help="base URL for MLSO API", default=BASE_URL
+    )
+    parser.add_argument(
+        "--local", help="set base URL for MLSO API to localhost", action="store_true"
     )
     parser.add_argument("--verbose", help="output warnings", action="store_true")
     parser.add_argument(
