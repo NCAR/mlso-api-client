@@ -670,14 +670,15 @@ def _files(args):
             )
             filesize = _sizeof_fmt(f["filesize"]) if instrument != "events" else ""
             print(
-                f"{f['date-obs']:20s} {instrument:10s} {product_name:13s} {filesize:>10s} {f['filename']}"
+                f"{f['date-obs']:20s} {instrument:10s} {product_name:{max_productname_len}s} {filesize:>10s} {f['filename']}"
             )
         if len(filelist) > 1:
             print(
                 f"{'-' * 20} {'-' * 10} {product_sep} {'-' * 10} {'-' * max_filename_len}"
             )
             n_files = f"{len(filelist)} files"
-            print(f"{n_files:45s} {_sizeof_fmt(total_filesize):>10s} {''}")
+            files_width = 20 + 1 + 10 + 1 + max_productname_len
+            print(f"{n_files:{files_width}s} {_sizeof_fmt(total_filesize):>10s} {''}")
 
 
 def _print_help(args):
