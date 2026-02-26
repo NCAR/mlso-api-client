@@ -1,22 +1,30 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "mlso-api-client"
-version = "0.4.0"
+version = "1.0.0"
 description = "Python package providing a client to access Mauna Loa Solar Observatory (MLSO) data"
 authors = [
-  { name="Michael Galloy" },
-  { name="Michael Galloy", email="mgalloy@ucar.edu" },
+  { name = "Michael Galloy" },
+  { name = "Michael Galloy", email = "mgalloy@ucar.edu" },
 ]
-license = "MIT"
+maintainers = [
+  { name = "Michael Galloy" },
+  { name = "Michael Galloy", email = "mgalloy@ucar.edu" },
+]
+license = {text = "MIT"}
 license-files = ["LICENSE"]
 readme = "README.md"
 requires-python = ">=3.9"
 # see classifiers at https://pypi.org/classifiers/
 classifiers = [
-  "Development Status :: 4 - Beta",
-# Development Status :: 5 - Production/Stable
+  "Development Status :: 5 - Production/Stable",
   "Intended Audience :: Developers",
   "Intended Audience :: Science/Research",
   "Natural Language :: English",
+  "License :: OSI Approved :: MIT License",
   "Programming Language :: Python",
 ]
 keywords = ["webservice", "Mauna Loa Solar Observatory", "MLSO", "solar"]
@@ -80,7 +88,3 @@ exclude = '''
 [tool.pytest.ini_options]
 # increment the --cov-fail-under as we increase test coverage
 addopts = "--cov-report html:coverage_html --cov-report term-missing --cov-fail-under 80"
-
-[build-system]
-requires = ["setuptools >= 77.0.3"]
-build-backend = "setuptools.build_meta"

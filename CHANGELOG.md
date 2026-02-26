@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.0.0] - TBD
+## [1.0.0] - Feb 26, 2026
 
 - Initial release providing a Python API, a command-line interface, and IDL
   API to access MLSO data via the MLSO API webservice.
