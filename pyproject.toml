@@ -42,6 +42,7 @@ changelog = "https://github.com/NCAR/mlso-api-client/blob/master/CHANGELOG.md"
 
 [project.optional-dependencies]
 dev = [
+  "build",
   "pytest",
   "pytest-cov",
   "pre-commit",
