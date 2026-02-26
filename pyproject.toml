@@ -14,7 +14,8 @@ maintainers = [
   { name = "Michael Galloy" },
   { name = "Michael Galloy", email = "mgalloy@ucar.edu" },
 ]
-license = {text = "MIT"}
+license = "MIT"
+#license = {text = "MIT"}
 license-files = ["LICENSE"]
 readme = "README.md"
 requires-python = ">=3.9"
@@ -24,7 +25,6 @@ classifiers = [
   "Intended Audience :: Developers",
   "Intended Audience :: Science/Research",
   "Natural Language :: English",
-  "License :: OSI Approved :: MIT License",
   "Programming Language :: Python",
 ]
 keywords = ["webservice", "Mauna Loa Solar Observatory", "MLSO", "solar"]
