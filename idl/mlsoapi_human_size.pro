@@ -1,3 +1,34 @@
+; docformat = 'rst'
+
+;+
+; Rounds value to integer value (or to nearest float value). Allows rounding
+; to nearest `roundTo` value, i.e., round to the nearest `0.1`.
+;
+; :Returns:
+;    numeric
+;
+; :Params:
+;    x : in, required, type=numeric (array)
+;       value to round
+;    round_to : in, optional, type=numeric scalar, default=1
+;       value to round to
+;
+; :Keywords:
+;    l64 : in, optional, type=boolean
+;       set to return result as a 64-bit integer
+;-
+function mlso_human_size_round, x, round_to, l64=l64
+  compile_opt strictarr
+  on_error, 2
+
+  if (n_elements(round_to) eq 0L) then begin
+    return, round(x, l64=l64)
+  endif else begin
+    return, round(x / round_to) * round_to
+  endelse
+end
+
+
 ;+
 ; Return a human readable array of sizes using bytes, kilobytes, megabytes,
 ; gigabytes, terabytes, and petabytes.
@@ -7,15 +38,15 @@
 ; :Examples:
 ;   For example, try::
 ;
-;     IDL> print, mg_human_size([2387203222ULL, 12121, 13872960])
+;     IDL> print, mlsoapi_human_size([2387203222ULL, 12121, 13872960])
 ;     2G 12K 13M
-;     IDL> print, mg_human_size([2387203222ULL, 12121, 13872960], /si)
+;     IDL> print, mlsoapi_human_size([2387203222ULL, 12121, 13872960], /si)
 ;     2G 12K 14M
-;     IDL> print, mg_human_size([2387203222ULL, 12121, 13872960], decimal_places=2)
+;     IDL> print, mlsoapi_human_size([2387203222ULL, 12121, 13872960], decimal_places=2)
 ;     2.22G 11.84K 13.23M
-;     IDL> print, mg_human_size([2387203222ULL, 12121, 13872960], /long)
+;     IDL> print, mlsoapi_human_size([2387203222ULL, 12121, 13872960], /long)
 ;     2GB 12KB 13MB
-;     IDL> print, mg_human_size([2387203222ULL, 12121, 13872960], /bits)
+;     IDL> print, mlsoapi_human_size([2387203222ULL, 12121, 13872960], /bits)
 ;     2Gb 12Kb 13Mb
 ;
 ; :Returns:
@@ -72,7 +103,7 @@ function mlsoapi_human_size, sizes, $
       level++
     endwhile
 
-    results[i] = string(mg_round(s, round_to), units[level], format=format)
+    results[i] = string(mlso_human_size_round(s, round_to), units[level], format=format)
   endfor
 
   return, size(sizes, /n_dimensions) eq 0L ? results[0] : results
