@@ -9,12 +9,14 @@ from mlso.api import client
 
 def test_about(base_url, api_version, username):
     about_response = client.about(base_url=base_url, api_version=api_version)
+    assert type(about_response) == dict
 
 
 def test_instruments(base_url, api_version, username):
     instruments_response = client.instruments(
         base_url=base_url, api_version=api_version
     )
+    assert type(instruments_response) == list
 
 
 def test_products(base_url, api_version, username):
