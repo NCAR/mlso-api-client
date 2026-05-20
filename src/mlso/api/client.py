@@ -227,7 +227,7 @@ def products(
         {'description': 'mean, median, standard deviation of level 2 files',
         'id': 'l2average',
         'title': 'Level 2 average'},
-        {'description': 'density', 'id': 'density', 'title': 'Density'},
+        {'description': 'line-of-sight electron density', 'id': 'density', 'title': 'Density'},
         {'description': 'level 2 dynamics products',
         'id': 'dynamics',
         'title': 'Dynamics'},
