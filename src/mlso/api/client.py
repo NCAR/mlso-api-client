@@ -211,44 +211,28 @@ def products(
         {'products': [{'description': 'IQUV and backgrounds for various wavelengths',
         'id': 'l1',
         'title': 'Level 1'},
-        {'description': 'intensity-only level 1',
-        'id': 'intensity',
-        'title': 'Level 1 intensity'},
         {'description': 'mean of level 1 files',
         'id': 'mean',
         'title': 'Level 1 mean'},
         {'description': 'median of level 1 files',
         'id': 'median',
         'title': 'Level 1 median'},
-        {'description': 'standard deviation of level 1 files',
-        'id': 'sigma',
-        'title': 'Level 1 sigma'},
         {'description': 'level 2 products', 'id': 'l2', 'title': 'Level 2'},
         {'description': 'mean, median, standard deviation of level 2 files',
         'id': 'l2average',
         'title': 'Level 2 average'},
-        {'description': 'line-of-sight electron density', 'id': 'density', 'title': 'Density'},
-        {'description': 'level 2 dynamics products',
-        'id': 'dynamics',
-        'title': 'Dynamics'},
-        {'description': 'level 2 polarization products',
-        'id': 'polarization',
-        'title': 'Polarization'},
+        {'description': 'electron density', 'id': 'density', 'title': 'Density'},
         {'description': 'all products', 'id': 'all', 'title': 'All'}]}
 
     And::
 
         >>> [p["id"] for p in client.products("ucomp", base_url=base_url)["products"]]
         ['l1',
-        'intensity',
         'mean',
         'median',
-        'sigma',
         'l2',
         'l2average',
         'density',
-        'dynamics',
-        'polarization',
         'all']
 
     ``products`` can raise a ``ServerError`` if there is a problem with the web

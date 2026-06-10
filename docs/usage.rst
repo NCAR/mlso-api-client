@@ -65,11 +65,6 @@ The ``products`` routine gives a list of products with basic information.
             "title": "Level 1"
         },
         {
-            "description": "intensity-only level 1",
-            "id": "intensity",
-            "title": "Level 1 intensity"
-        },
-        {
             "description": "mean of level 1 files",
             "id": "mean",
             "title": "Level 1 mean"
@@ -78,11 +73,6 @@ The ``products`` routine gives a list of products with basic information.
             "description": "median of level 1 files",
             "id": "median",
             "title": "Level 1 median"
-        },
-        {
-            "description": "standard deviation of level 1 files",
-            "id": "sigma",
-            "title": "Level 1 sigma"
         },
         {
             "description": "level 2 products",
@@ -98,16 +88,6 @@ The ``products`` routine gives a list of products with basic information.
             "description": "density",
             "id": "density",
             "title": "Density"
-        },
-        {
-            "description": "level 2 dynamics products",
-            "id": "dynamics",
-            "title": "Dynamics"
-        },
-        {
-            "description": "level 2 polarization products",
-            "id": "polarization",
-            "title": "Polarization"
         },
         {
             "description": "all products",
@@ -222,15 +202,11 @@ To show the product for a given instrument, use the "products" sub-command:
     ID            Title                  Description
     ------------- ---------------------- -------------------------------------------------------
     l1            Level 1                IQUV and backgrounds for various wavelengths
-    intensity     Level 1 intensity      intensity-only level 1
     mean          Level 1 mean           mean of level 1 files
     median        Level 1 median         median of level 1 files
-    sigma         Level 1 sigma          standard deviation of level 1 files
     l2            Level 2                level 2 products
     l2average     Level 2 average        mean, median, standard deviation of level 2 files
     density       Density                density
-    dynamics      Dynamics               level 2 dynamics products
-    polarization  Polarization           level 2 polarization products
     all           All                    all products
 
 To list files matching a set of filters, use the "files" sub-command. To show
@@ -325,15 +301,11 @@ keyword:
     ID            Title                  Description
     ------------- ---------------------- -------------------------------------------------------
     l1            Level 1                IQUV and backgrounds for various wavelengths
-    intensity     Level 1 intensity      intensity-only level 1
     mean          Level 1 mean           mean of level 1 files
     median        Level 1 median         median of level 1 files
-    sigma         Level 1 sigma          standard deviation of level 1 files
     l2            Level 2                level 2 products
     l2average     Level 2 average        mean, median, standard deviation of level 2 files
     density       Density                density
-    dynamics      Dynamics               level 2 dynamics products
-    polarization  Polarization           level 2 polarization products
     all           All                    all products
 
 To list the files available for UCoMP instrument's level 2 product with wave
@@ -396,7 +368,7 @@ To retrieve information about the products available for UCoMP:
 
     IDL> products_info = mlso_products('ucomp')
     IDL> print, strjoin(products_info.products.id, ', '), format='UCoMP products: %s'
-    UCoMP products: l1, intensity, mean, median, sigma, l2, l2average, density, dynamics, polarization, all
+    UCoMP products: l1, mean, median, l2, l2average, density, all
     IDL> help, products_info.products[0]
     ** Structure <2e3e8>, 3 tags, length=48, data length=48, refs=2:
       DESCRIPTION     STRING    'IQUV and backgrounds for various wavelengths'
