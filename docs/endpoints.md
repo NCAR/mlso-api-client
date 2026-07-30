@@ -110,7 +110,6 @@ $ curl -sL "http://api.mlso.ucar.edu/v1/instruments/kcor/products" | python -m j
         {"description": "NRGF enhanced average image", "id": "nrgfavgenh", "title": "NRGF avg enh"},
         {"description": "NRGF enhanced extended average image", "id": "nrgfextavgenh", "title": "NRGF ext avg enh"},
         {"description": "pB difference image", "id": "pbdiff", "title": "pB diff"},
-        {"description": "NRGF and difference image", "id": "nrgf+diff", "title": "NRGF + pB diff"},
         {"description": "all products", "id": "all", "title": "All"}
     ]
 }
