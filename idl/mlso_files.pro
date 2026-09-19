@@ -26,6 +26,8 @@
 ;     time period to select 1 file from, e.g., "15minute" returns 1 file every
 ;     15 minutes; units are second, minute, hour, day, week, month, quarter,
 ;     year
+;   event : in, optional, type=string
+;     event type to download files during, currently only "cme"
 ;   client : in, optional, type=string, default="idl"
 ;     client used, e.g., "idl", "forward"
 ;   base_url : in, optional, type=string, default="http://api.mlso.ucar.edu"
@@ -44,6 +46,7 @@ function mlso_files, instrument, product, $
                      end_date=end_date, $
                      carrington_rotation=carrington_rotation, $
                      every=every, $
+                     event=event, $
                      client=client, $
                      base_url=base_url, $
                      api_version=api_version, $
@@ -77,6 +80,9 @@ function mlso_files, instrument, product, $
   endif
   if (n_elements(every) gt 0L) then begin
     filters = [filters, string(every, format='every=%s')]
+  endif
+  if (n_elements(event) gt 0L) then begin
+    filters = [filters, string(event, format='event=%s')]
   endif
   filters = [filters, string(_client, format='client=%s')]
   filters = n_elements(filters) gt 0L ? ('?' + strjoin(filters, '&')) : ''

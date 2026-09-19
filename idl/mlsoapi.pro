@@ -100,6 +100,12 @@ end
 ;     end date to end looking for files to
 ;   carrington_rotation : in, optional, type=integer
 ;     Carrington Rotation number of files to return
+;   every : in, optional, type=string
+;     time period to select 1 file from, e.g., "15minute" returns 1 file every
+;     15 minutes; units are second, minute, hour, day, week, month, quarter,
+;     year
+;   event : in, optional, type=string
+;     event type to download files during, currently only "cme"
 ;   base_url : in, required, type=string
 ;     base URL for the MLSO API server
 ;   api_version : in, optional, type=string, default="v1"
@@ -112,7 +118,9 @@ pro mlsoapi_files, url_object, instrument, product, $
                    wave_region=wave_region, $
                    start_date=start_date, $
                    end_date=end_date, $
-                   carrington_rotation=carrington_rotation
+                   carrington_rotation=carrington_rotation, $
+                   every=every, $
+                   event=event
   compile_opt strictarr
 
   files_info = mlso_files(instrument, product, $
@@ -121,6 +129,8 @@ pro mlsoapi_files, url_object, instrument, product, $
                           start_date=start_date, $
                           end_date=end_date, $
                           carrington_rotation=carrington_rotation, $
+                          every=every, $
+                          event=event, $
                           base_url=base_url, $
                           url_object=url_object)
   files = files_info.files
@@ -178,6 +188,12 @@ end
 ;     end date to end looking for files to
 ;   carrington_rotation : in, optional, type=integer
 ;     Carrington Rotation number of files to return
+;   every : in, optional, type=string
+;     time period to select 1 file from, e.g., "15minute" returns 1 file every
+;     15 minutes; units are second, minute, hour, day, week, month, quarter,
+;     year
+;   event : in, optional, type=string
+;     event type to download files during, currently only "cme"
 ;   base_url : in, required, type=string
 ;     base URL for the MLSO API server
 ;   api_version : in, optional, type=string, default="v1"
@@ -192,6 +208,8 @@ pro mlsoapi_download_files, url_object, instrument, product, username, $
                             start_date=start_date, $
                             end_date=end_date, $
                             carrington_rotation=carrington_rotation, $
+                            every=every, $
+                            event=event, $
                             output_dir=output_dir, $
                             verbose=verbose
   compile_opt strictarr
@@ -202,6 +220,8 @@ pro mlsoapi_download_files, url_object, instrument, product, username, $
                           start_date=start_date, $
                           end_date=end_date, $
                           carrington_rotation=carrington_rotation, $
+                          every=every, $
+                          event=event, $
                           base_url=base_url, $
                           url_object=url_object)
   files = files_info.files
@@ -241,6 +261,12 @@ end
 ;     end date to end looking for files to
 ;   carrington_rotation : in, optional, type=integer
 ;     Carrington Rotation number of files to return
+;   every : in, optional, type=string
+;     time period to select 1 file from, e.g., "15minute" returns 1 file every
+;     15 minutes; units are second, minute, hour, day, week, month, quarter,
+;     year
+;   event : in, optional, type=string
+;     event type to download files during, currently only "cme"
 ;   download : in, optional, type=boolean
 ;     set to download files found if both `instrument` and `product` are
 ;     specified
@@ -259,6 +285,8 @@ pro mlsoapi, instrument=instrument, $
              start_date=start_date, $
              end_date=end_date, $
              carrington_rotation=carrington_rotation, $
+             every=every, $
+             event=event, $
              download=download, $
              output_dir=output_dir, $
              username=username, $
@@ -285,22 +313,26 @@ pro mlsoapi, instrument=instrument, $
     else: begin
         if (keyword_set(download)) then begin
           mlsoapi_download_files, url_object, instrument, product, username, $
-                                  base_url=_base_url, $
-                                  api_version=_api_version, $
-                                  wave_region=wave_region, $
                                   start_date=start_date, $
                                   end_date=end_date, $
                                   carrington_rotation=carrington_rotation, $
+                                  every=every, $
+                                  event=event, $
+                                  wave_region=wave_region, $
                                   output_dir=output_dir, $
+                                  base_url=_base_url, $
+                                  api_version=_api_version, $
                                   verbose=verbose
         endif else begin
           mlsoapi_files, url_object, instrument, product, $
-                         base_url=_base_url, $
-                         api_version=_api_version, $
-                         wave_region=wave_region, $
                          start_date=start_date, $
+                         end_date=end_date, $
                          carrington_rotation=carrington_rotation, $
-                         end_date=end_date
+                         every=every, $
+                         event=event, $
+                         wave_region=wave_region, $
+                         base_url=_base_url, $
+                         api_version=_api_version
         endelse
       end
   endcase
