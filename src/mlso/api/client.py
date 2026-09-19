@@ -592,6 +592,9 @@ def _files(args):
     if args.every is not None:
         filters["every"] = args.every
 
+    if args.event_type is not None:
+        filters["event"] = args.event_type
+
     try:
         files_response = files(
             args.instrument,
@@ -753,6 +756,7 @@ def main():
     files_parser.add_argument(
         "--every", help="time to choose 1 file from", default=None
     )
+    files_parser.add_argument("--event-type", help="event type: cme,...")
     files_parser.add_argument(
         "-d", "--download", help="download the displayed files", action="store_true"
     )
