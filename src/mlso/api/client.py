@@ -353,22 +353,21 @@ def files(
 
         >>> from mlso.api import client
         >>> client.files("ucomp", "l2", filters={"start-date": "2025-3-24", "wave-region": "789"})
-        {'end-date': '2025-03-24T21:03:55',
-         'files': [{
-            'date-obs': '2025-03-24T20:06:52',
-            'filename': '20250324.200652.ucomp.789.l2.fts',
-            'filesize': 0,
-            'instrument': 'ucomp',
-            'obs-plan': 'synoptic-original-lines.cbk',
-            'product': 'l2',
-            'url': 'http://api.mlso.ucar.edu/v1/download?obsday-id=10136&instrument=ucomp&filename=20250324.200652.ucomp.789.l2.fts',
-            'wave-region': '789',
-            'wavelengths': 5
-         }],
+        {'end-date': '2026-09-16T00:01:03',
+         'files': [{'date-obs': '2025-03-24T20:06:52',
+           'filename': '20250324.200652.ucomp.789.l2.fts',
+           'filesize': 31501440,
+           'instrument': 'ucomp',
+           'obs-plan': 'synoptic-original-lines.cbk',
+           'product': 'l2',
+           'url': 'http://127.0.0.1:5000/v1/download?obsday-id=10137&client=python&instrument=ucomp&filename=20250324.200652.ucomp.789.l2.fts',
+           'wave-region': '789',
+           'wavelengths': 5}],
          'instrument': 'ucomp',
+         'n_files': 1,
          'product': 'l2',
          'start-date': '2025-3-24',
-         'total_filesize': 0}
+         'total_filesize': 31501440}
 
     Use ``download_file`` to download the file(s) returned with this routine.
 
@@ -399,6 +398,8 @@ def files(
                     - ``every=2hours``,
                     - ``every=1day``, or
                     - ``every=12hours``.
+    ``event``       Return only files that occur during events of the given
+                    type, currently only "cme"
     ``wave‑region`` Return only files for the given wave region (UCoMP only).
                     Valid values are "637", "706", "789", 1074", "1079".
     ``obs‑plan``    Return only files matching the given observing plan, e.g.:

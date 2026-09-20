@@ -198,16 +198,12 @@ $ curl -sL "http://api.mlso.ucar.edu/v1/instruments/kcor/products/pb/files?start
         }
     ],
     "instrument": "kcor",
+    "n_files": 4,
     "product": "pb",
     "start-date": "2025-03-24T21:03:00",
     "total_filesize": 10324370
 }
 ```
-
-Note: The `filesize` and `total_filesize` cannot be relied on for all files
-currently. The `filesize` will sometimes return 0 for a file, which will then
-artificially make the `total_filesize` smaller. This will be updated in the
-future.
 
 The URL parameters available to filter the files are given in the table below.
 
@@ -217,6 +213,7 @@ The URL parameters available to filter the files are given in the table below.
 | `end‑date` | Return only files before the "end-date". |
 | `cr` | Return only files matching Carrington Rotation number "cr". |
 | `every` | Return only a single file for every time period matching "every". The recognized time periods are second, minute, hour, day, week, month, quarter, or year (optionally ending in "s"). This parameter is an integer followed by one of these time periods, e.g., `every=2hours`, `every=1day`, or `every=12hours`. |
+| `event` | Return only files when occur during an event of the given type, currently only "cme" |
 | `wave‑region` | Return only files for the given wave region (UCoMP only). Valid values are "637", "706", "789", 1074", "1079". |
 | `obs‑plan` | Return only files matching the given observing plan, e.g., "waves" or "synoptic" (UCoMP only). |
 

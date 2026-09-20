@@ -19,6 +19,7 @@ that can be used in non-interactive programs.
                  start_date=start_date, $
                  end_date=end_date, $
                  carrington_rotation=carrington_rotation, $
+                 event=event, $
                  download=download, $
                  output_dir=output_dir, $
                  username=username, $
@@ -41,6 +42,7 @@ Keywords
 :start_date: ``in, optional, type=string`` start date to begin looking for files from
 :end_date: ``in, optional, type=string`` end date to end looking for files to
 :carrington_rotation: ``in, optional, type=integer`` Carrington Rotation number of files to return
+:event: ``in, optional, type=string`` event type to return files during, currently only "cme"
 :download: ``in, optional, type=boolean`` set to download files found if both `instrument` and `product` are specified
 :output_dir: ``in, optional, type=string, default='.'`` location to place downloaded files, creates if it doesn't already exist
 :username: ``in, optional, type=string`` username registered with HAO website, required if `/DOWNLOAD` set
@@ -123,6 +125,7 @@ Keywords
                          end_date=end_date, $
                          carrington_rotation=carrington_rotation, $
                          every=every, $
+                         event=event, $
                          client=client, $
                          base_url=base_url, $
                          api_version=api_version, $
@@ -151,6 +154,7 @@ Keywords
 :end_date: ``in, optional, type=string`` end date to end looking for files to
 :carrington_rotation: ``in, optional, type=integer`` Carrington Rotation number of files to return
 :every: ``in, optional, type=string`` time period to select 1 file from, e.g., "15minute" returns 1 file every 15 minutes; units are second, minute, hour, day, week, month, quarter, year
+:event: ``in, optional, type=string`` event type to return files during, currently only "cme"
 :client: ``in, optional, type=string, default="idl"`` client used, e.g., "idl", "forward"
 :base_url: ``in, optional, type=string, default="http://api.mlso.ucar.edu"`` base URL for the APIå
 :api_version: ``in, optional, type=string, default="v1"``` version of the API to use
