@@ -621,7 +621,23 @@ def _files(args):
         print(f"End date   : {end_date}")
         print(f"Filesize   : {filesize}")
 
-    max_productname_len = 15
+    n_columns = os.get_terminal_size().columns
+
+    datetime_width = 21
+    instrument_width = 10
+    max_productname_width = 15
+    filesize_width = 10
+    max_filename_width = (
+        n_columns
+        - datetime_width
+        - 1
+        - instrument_width
+        - 1
+        - max_productname_width
+        - 1
+        - filesize_width
+        - 1
+    )
 
     filelist = files_response["files"]
     if args.download:
@@ -634,17 +650,17 @@ def _files(args):
             quiet=args.quiet,
         )
     else:
-        product_sep = "-" * max_productname_len
+        product_sep = "-" * max_productname_width
         if len(filelist) > 0:
             if args.verbose:
                 print()
-            max_filename_len = max([len(f["filename"]) for f in filelist])
-            max_filename_len = max(max_filename_len, len("Filename"))
+            # max_filename_len = max([len(f["filename"]) for f in filelist])
+            # max_filename_len = max(max_filename_len, len("Filename"))
             print(
-                f"{'Date/time':20s} {'Instrument':10s} {'Product':{max_productname_len}s} {'Filesize':10s} {'Filename'}"
+                f"{'Date/time':{datetime_width}s} {'Instrument':{instrument_width}s} {'Product':{max_productname_width}s} {'Filesize':{filesize_width}s} {'Filename':{max_filename_width}s}"
             )
             print(
-                f"{'-' * 20} {'-' * 10} {product_sep} {'-' * 10} {'-' * max_filename_len}"
+                f"{'-' * datetime_width} {'-' * instrument_width} {product_sep} {'-' * filesize_width} {'-' * max_filename_width}"
             )
             total_filesize = 0
         for f in filelist:
@@ -653,20 +669,130 @@ def _files(args):
             product_name = f["product"]
             product_name = (
                 product_name
-                if len(product_name) <= max_productname_len
-                else f"{product_name[:max_productname_len-2]}.."
+                if len(product_name) <= max_productname_width
+                else f"{product_name[:max_productname_width-2]}.."
+            )
+            filename = f["filename"]
+            filename = (
+                filename
+                if len(filename) <= max_filename_width
+                else f"{filename[:max_filename_width-2]}.."
             )
             filesize = _sizeof_fmt(f["filesize"]) if instrument != "events" else ""
             print(
-                f"{f['date-obs']:20s} {instrument:10s} {product_name:{max_productname_len}s} {filesize:>10s} {f['filename']}"
+                f"{f['date-obs']:{datetime_width}s} {instrument:{instrument_width}s} {product_name:{max_productname_width}s} {filesize:>{filesize_width}s} {filename:{max_filename_width}s}"
             )
         if len(filelist) > 1:
             print(
-                f"{'-' * 20} {'-' * 10} {product_sep} {'-' * 10} {'-' * max_filename_len}"
+                f"{'-' * datetime_width} {'-' * instrument_width} {product_sep} {'-' * filesize_width} {'-' * max_filename_width}"
             )
             n_files = f"{len(filelist)} files"
-            files_width = 20 + 1 + 10 + 1 + max_productname_len
-            print(f"{n_files:{files_width}s} {_sizeof_fmt(total_filesize):>10s} {''}")
+            files_width = (
+                datetime_width + 1 + instrument_width + 1 + max_productname_width
+            )
+            print(
+                f"{n_files:{files_width}s} {_sizeof_fmt(total_filesize):>{filesize_width}s} {''}"
+            )
+
+
+def _events(args):
+    """Handle printing the ``/instruments/{instrument}/products/{product}``
+    endpoint results, optionally downloading the files.
+    """
+    filters = {}
+
+    base_url = LOCAL_BASE_URL if args.local else args.base_url
+
+    if args.start_date is not None:
+        filters["start-date"] = args.start_date
+
+    if args.end_date is not None:
+        filters["end-date"] = args.end_date
+
+    if args.carrington_rotation is not None:
+        filters["cr"] = args.carrington_rotation
+
+    if args.every is not None:
+        filters["every"] = args.every
+
+    try:
+        files_response = files(
+            "events",
+            args.type,
+            filters,
+            base_url=base_url,
+            verbose=args.verbose,
+            client="cli",
+        )
+    except ServerError as e:
+        print(e)
+        return
+
+    if args.verbose:
+        instrument = files_response["instrument"]
+        product = files_response["product"]
+        start_date = files_response["start-date"]
+        end_date = files_response["end-date"]
+        filesize = _sizeof_fmt(files_response["total_filesize"])
+        print(f"Instrument : {instrument}")
+        print(f"Product    : {product}")
+        print(f"Start date : {start_date}")
+        print(f"End date   : {end_date}")
+        print(f"Filesize   : {filesize}")
+
+    filelist = files_response["files"]
+    max_eventtype_width = 7
+    instrument_width = 10
+    n_columns = os.get_terminal_size().columns
+    date_width = 21
+    quadrant_width = 10
+    comment_width = max(
+        n_columns
+        - date_width
+        - 1
+        - date_width
+        - 1
+        - instrument_width
+        - 1
+        - max_eventtype_width
+        - 1
+        - quadrant_width
+        - 1,
+        10,
+    )
+    if len(filelist) > 0:
+        if args.verbose:
+            print()
+        print(
+            f"{'Start date/time':{date_width}s} {'End date/time':{date_width}s} {'Instrument':{instrument_width}} {'Type':{max_eventtype_width}s} {'Quadrant':{quadrant_width}s} {'Comment':{comment_width}s}"
+        )
+        print(
+            f"{'-' * date_width} {'-' * date_width} {'-' * instrument_width} {'-' * max_eventtype_width} {'-' * quadrant_width} {'-' * comment_width}"
+        )
+    for f in filelist:
+        instrument = f["instrument"]
+        event_type = f["product"]
+        quadrant = f["quadrant"]
+        comments = textwrap.wrap(f["comment"], width=comment_width)
+        start_date = f["date-obs"]
+        end_date = f["date-end"]
+        event_type = (
+            event_type
+            if len(event_type) <= max_eventtype_width
+            else f"{event_type[:max_eventtype_width-2]}.."
+        )
+        print(
+            f"{start_date:{date_width}s} {end_date:{date_width}s} {instrument:{instrument_width}s} {event_type:{max_eventtype_width}s} {quadrant:{quadrant_width}s} {comments[0] if len(comments) > 0 else '':{comment_width}s}"
+        )
+        for c in comments[1:]:
+            print(
+                f"{'':{date_width}s} {'':{date_width}s} {'':{instrument_width}s} {'':{max_eventtype_width}s} {'':{quadrant_width}s} {c:{comment_width}s}"
+            )
+    if len(filelist) > 1:
+        print(
+            f"{'-' * date_width} {'-' * date_width} {'-' * instrument_width} {'-' * max_eventtype_width} {'-' * quadrant_width} {'-' * comment_width}"
+        )
+        print(f"{len(filelist):d} events")
 
 
 def _print_help(args):
@@ -768,6 +894,24 @@ def main():
         "-o", "--output-dir", help="output directory for downloaded files", default="."
     )
     files_parser.set_defaults(func=_files, parser=files_parser)
+
+    events_parser = subparsers.add_parser("events", help="matching events")
+    events_parser.add_argument(
+        "-t", "--type", help='event type, e.g., "cme"', default=None
+    )
+    events_parser.add_argument("-s", "--start-date", help="start date", default=None)
+    events_parser.add_argument("-e", "--end-date", help="end date", default=None)
+    events_parser.add_argument(
+        "-c",
+        "--carrington-rotation",
+        "--cr",
+        help="Carrington Rotation number",
+        default=None,
+    )
+    events_parser.add_argument(
+        "--every", help="time to choose 1 file from", default=None
+    )
+    events_parser.set_defaults(func=_events, parser=events_parser)
 
     # parse args and call appropriate sub-command
     args = parser.parse_args()
