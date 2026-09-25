@@ -52,6 +52,7 @@ BASE_URL = "http://api.mlso.ucar.edu"
 LOCAL_BASE_URL = "http://127.0.0.1:5000"
 API_VERSION = "v1"
 SIGNUP_URL = "https://registration.hao.ucar.edu"
+DOCS = "https://mlso-api-client.readthedocs.io/en/latest/"
 
 
 # chunk size for downloading files, 1-10M is probably the most efficient size
@@ -510,6 +511,7 @@ def _products(args):
 
 def _download_files(
     base_url: str,
+    format_name: str,
     filelist: list,
     output_dir: Path,
     username: str,
@@ -524,14 +526,15 @@ def _download_files(
             print(f"creating output path {output_dir}")
         os.makedirs(output_dir)
 
-    try:
-        authenticate(username, base_url=base_url, verbose=verbose)
-    except UserNotFound as e:
-        print(e)
-        sys.exit(1)
-    except ServerError as e:
-        print(e)
-        sys.exit(1)
+    if format_name == "fits":
+        try:
+            authenticate(username, base_url=base_url, verbose=verbose)
+        except UserNotFound as e:
+            print(e)
+            sys.exit(1)
+        except ServerError as e:
+            print(e)
+            sys.exit(1)
 
     if quiet:
         iterable_files = filelist
@@ -596,6 +599,9 @@ def _files(args):
     if args.event_type is not None:
         filters["event"] = args.event_type
 
+    if args.format is not None:
+        filters["format"] = args.format
+
     try:
         files_response = files(
             args.instrument,
@@ -643,6 +649,7 @@ def _files(args):
     if args.download:
         _download_files(
             base_url,
+            args.format,
             filelist,
             Path(args.output_dir),
             args.username,
@@ -826,7 +833,10 @@ def main():
         -q, --quiet           surpress informational messages
     """
     name = f"MLSO API command line interface (mlso-api-client {__version__})"
-    parser = argparse.ArgumentParser(description=name)
+
+    epilog = """This commandline utility provides access to the data at Mauna Loa Solar Observatory. See the documentation at https://mlso-api-client.readthedocs.io/en/latest/ for more information.
+"""
+    parser = argparse.ArgumentParser(description=name, epilog=epilog)
 
     parser.add_argument("-v", "--version", action="version", version=name)
 
@@ -893,6 +903,7 @@ def main():
     files_parser.add_argument(
         "-o", "--output-dir", help="output directory for downloaded files", default="."
     )
+    files_parser.add_argument("-f", "--format", help="file format", default="fits")
     files_parser.set_defaults(func=_files, parser=files_parser)
 
     events_parser = subparsers.add_parser("events", help="matching events")
