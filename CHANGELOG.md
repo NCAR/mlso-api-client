@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog] and this project adheres to
 
 ## [Unreleased]
 
+- Add event dataset.
+- Allow filtering of other instrument data by events.
+- Retrieve different format types: FITS files or quicklooks.
+
 ## [1.0.0] - Feb 26, 2026
 
 - Initial release providing a Python API, a command-line interface, and IDL
