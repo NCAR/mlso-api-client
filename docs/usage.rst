@@ -165,24 +165,32 @@ A Unix command-line interface is also provided:
 .. code-block:: console
 
     $ mlsoapi --help
-    usage: mlsoapi [-h] [-v] [-u BASE_URL] [--verbose] [-q] {instruments,products,files} ...
+    usage: mlsoapi [-h] [-v] [-u BASE_URL] [--local] [--verbose] [-q]
+                {about,instruments,products,files,events} ...
 
-    MLSO API command line interface (mlso-api-client 0.3.2)
+    MLSO API command line interface (mlso-api-client 1.0.0)
 
     positional arguments:
-    {instruments,products,files}
+    {about,instruments,products,files,events}
                             sub-command help
+        about               Information about the MLSO API server
         instruments         MLSO instruments
-        products            MLSO instruments
-        files               MLSO data files
+        products            products for given instrument
+        files               data files for given instrument/product
+        events              matching events
 
     options:
     -h, --help            show this help message and exit
     -v, --version         show program's version number and exit
-    -u BASE_URL, --base-url BASE_URL
+    -u, --base-url BASE_URL
                             base URL for MLSO API
+    --local               set base URL for MLSO API to localhost
     --verbose             output warnings
     -q, --quiet           surpress informational messages
+
+    This commandline utility provides access to the data at Mauna Loa Solar Observatory.
+    See the documentation at https://mlso-api-client.readthedocs.io/en/latest/ for more
+    information.
 
 To query for the available instruments and basic metadata about each one:
 
@@ -191,7 +199,8 @@ To query for the available instruments and basic metadata about each one:
     $ mlsoapi instruments
     ID       Instrument name                              Dates available
     -------- -------------------------------------------- -----------------------
-    kcor     COSMO K-Coronagraph (KCor)                   2013-09-30...2025-03-24
+    events   MLSO events                                  2002-02-27...2026-09-14
+    kcor     COSMO K-Coronagraph (KCor)                   2013-09-30...2026-09-22
     ucomp    Upgraded Coronal Multi-Polarimeter (UCoMP)   2021-07-15...2025-03-24
 
 To show the product for a given instrument, use the "products" sub-command:
@@ -217,30 +226,33 @@ the available filters, use the ``--help`` option:
     $ mlsoapi files --help
     usage: mlsoapi files [-h] [-i INSTRUMENT] [-p PRODUCT] [--wave-region WAVE_REGION]
                         [--obs-plan OBS_PLAN] [-s START_DATE] [-e END_DATE]
-                        [-c CARRINGTON_ROTATION] [--every EVERY] [-d] [-u USERNAME]
-                        [-o OUTPUT_DIR]
+                        [-c CARRINGTON_ROTATION] [--every EVERY] [--event-type EVENT_TYPE]
+                        [-d] [-u USERNAME] [-o OUTPUT_DIR] [-f FORMAT]
 
     options:
     -h, --help            show this help message and exit
-    -i INSTRUMENT, --instrument INSTRUMENT
+    -i, --instrument INSTRUMENT
                             instrument
-    -p PRODUCT, --product PRODUCT
+    -p, --product PRODUCT
                             product
     --wave-region WAVE_REGION
                             wave region, e.g., 1074, 1079, etc.
     --obs-plan OBS_PLAN   observing plan: synoptic or waves
-    -s START_DATE, --start-date START_DATE
+    -s, --start-date START_DATE
                             start date
-    -e END_DATE, --end-date END_DATE
+    -e, --end-date END_DATE
                             end date
-    -c CARRINGTON_ROTATION, --carrington-rotation CARRINGTON_ROTATION
+    -c, --carrington-rotation, --cr CARRINGTON_ROTATION
                             Carrington Rotation number
     --every EVERY         time to choose 1 file from
+    --event-type EVENT_TYPE
+                            event type: cme,...
     -d, --download        download the displayed files
-    -u USERNAME, --username USERNAME
+    -u, --username USERNAME
                             email already registered at HAO website
-    -o OUTPUT_DIR, --output-dir OUTPUT_DIR
+    -o, --output-dir OUTPUT_DIR
                             output directory for downloaded files
+    -f, --format FORMAT   file format: "fits" or "quicklook"
 
 For example, to show the UCoMP level 2 files in the 789 nm wave region after
 2025-03-23, do:

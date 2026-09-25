@@ -903,7 +903,9 @@ def main():
     files_parser.add_argument(
         "-o", "--output-dir", help="output directory for downloaded files", default="."
     )
-    files_parser.add_argument("-f", "--format", help="file format", default="fits")
+    files_parser.add_argument(
+        "-f", "--format", help='file format: "fits" or "quicklook"', default="fits"
+    )
     files_parser.set_defaults(func=_files, parser=files_parser)
 
     events_parser = subparsers.add_parser("events", help="matching events")

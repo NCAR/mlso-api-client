@@ -28,6 +28,8 @@
 ;     year
 ;   event : in, optional, type=string
 ;     event type to download files during, currently only "cme"
+;   format : in, optional, type=string
+;     file format: "fits" or "quicklook"
 ;   client : in, optional, type=string, default="idl"
 ;     client used, e.g., "idl", "forward"
 ;   base_url : in, optional, type=string, default="http://api.mlso.ucar.edu"
@@ -47,6 +49,7 @@ function mlso_files, instrument, product, $
                      carrington_rotation=carrington_rotation, $
                      every=every, $
                      event=event, $
+                     format=format, $
                      client=client, $
                      base_url=base_url, $
                      api_version=api_version, $
@@ -83,6 +86,9 @@ function mlso_files, instrument, product, $
   endif
   if (n_elements(event) gt 0L) then begin
     filters = [filters, string(event, format='event=%s')]
+  endif
+  if (n_elements(format) gt 0L) then begin
+    filters = [filters, string(format, format='format=%s')]
   endif
   filters = [filters, string(_client, format='client=%s')]
   filters = n_elements(filters) gt 0L ? ('?' + strjoin(filters, '&')) : ''
