@@ -361,10 +361,11 @@ def authenticate(
                 )
 
 
-def download_file(file, output_dir):
+def download_file(file: dict, output_dir: str = ".") -> Path:
     """Download a single file to the given output directory. The ``file``
     argument is a dict with at least fields "url" and "filename". ``output_dir``
-    is simply the directory to put the downloaded file.
+    is simply the directory to put the downloaded file. Return a pathlib.Path of
+    the downloaded file.
 
         >>> from mlso.api import client
         >>> client.authenticate(my_email_address)
@@ -396,9 +397,11 @@ def files(
     instrument: str,
     product: str,
     filters: dict[str, str] | None = None,
+    /,
+    *,
     base_url: str | None = BASE_URL,
     api_version: str | None = API_VERSION,
-    verbose=False,
+    verbose: bool = False,
     client: str | None = "python",
 ):
     """Retrieve metadata about files from a given instrument/product and
@@ -494,16 +497,40 @@ def files(
     return j
 
 
+def events(
+    type: str,
+    filters: dict[str, str] | None = None,
+    /,
+    *,
+    base_url: str | None = BASE_URL,
+    api_version: str | None = API_VERSION,
+    verbose: bool = False,
+    client: str | None = "python",
+):
+    """Thin wrapper to `files` call with "events" as the instrument."""
+    return files(
+        "events",
+        type,
+        filters,
+        base_url=base_url,
+        api_version=api_version,
+        verbose=verbose,
+        client=client,
+    )
+
+
 # Command line interface sub-command handlers
 
 
-def _about(args):
+def _about(args: argparse.Namespace):
     """Handle printing the ``/about`` endpoint results for the command line
     interface.
     """
     base_url = LOCAL_BASE_URL if args.local else args.base_url
     try:
-        about_response = about(base_url, verbose=args.verbose)
+        about_response = about(
+            base_url, api_version=args.api_version, verbose=args.verbose
+        )
         server_version = about_response["version"]
         documentation_url = about_response["documentation"]
         print(f"server version: {server_version}, client version: {__version__}")
@@ -518,7 +545,9 @@ def _instruments(args: argparse.Namespace):
     """
     base_url = LOCAL_BASE_URL if args.local else args.base_url
     try:
-        instruments_response = instruments(base_url, verbose=args.verbose)
+        instruments_response = instruments(
+            base_url, api_version=args.api_version, verbose=args.verbose
+        )
     except ServerError as e:
         print(e)
         return
@@ -544,7 +573,10 @@ def _products(args):
     base_url = LOCAL_BASE_URL if args.local else args.base_url
     try:
         products_response = products(
-            args.instrument, base_url=base_url, verbose=args.verbose
+            args.instrument,
+            base_url=base_url,
+            api_version=args.api_version,
+            verbose=args.verbose,
         )
     except ServerError as e:
         print(e)
@@ -576,7 +608,11 @@ def _info(args):
     try:
         if args.product is not None:
             info = product_info(
-                args.instrument, args.product, base_url=base_url, verbose=args.verbose
+                args.instrument,
+                args.product,
+                base_url=base_url,
+                api_version=args.api_version,
+                verbose=args.verbose,
             )
             key_width = 12
             print(f"{'Name':{key_width}s} : {info['name']}")
@@ -586,7 +622,10 @@ def _info(args):
             print(f"{'Formats':{key_width}s} : {', '.join(info['formats'])}")
         else:
             info = instrument_info(
-                args.instrument, base_url=base_url, verbose=args.verbose
+                args.instrument,
+                base_url=base_url,
+                api_version=args.api_version,
+                verbose=args.verbose,
             )
             key_width = 12
             print(f"{'Name':{key_width}s} : {info['name']}")
@@ -601,14 +640,15 @@ def _info(args):
 
 def _download_files(
     base_url: str,
+    api_version: str,
     format_name: str,
-    filelist: list,
+    filelist: list[dict],
     output_dir: Path,
     username: str,
     verbose: bool = False,
     quiet: bool = False,
 ):
-    """Download the given files to an output directory. The ``files`` argument
+    """Download the given files to an output directory. The ``filelist`` argument
     is a list of dicts with fields "url" and "filename".
     """
     if not output_dir.is_dir():
@@ -618,7 +658,9 @@ def _download_files(
 
     if format_name == "fits":
         try:
-            authenticate(username, base_url=base_url, verbose=verbose)
+            authenticate(
+                username, base_url=base_url, api_version=api_version, verbose=verbose
+            )
         except UserNotFound as e:
             print(e)
             sys.exit(1)
@@ -660,7 +702,7 @@ def _sizeof_fmt(n_bytes: int) -> str:
         return format_string.format(quotient, unit)
 
 
-def _files(args):
+def _files(args: argparse.Namespace):
     """Handle printing the ``/instruments/{instrument}/products/{product}``
     endpoint results, optionally downloading the files.
     """
@@ -697,7 +739,8 @@ def _files(args):
             args.instrument,
             args.product,
             filters,
-            base_url=base_url,
+            base_url=args.base_url,
+            api_version=args.api_version,
             verbose=args.verbose,
             client="cli",
         )
@@ -739,6 +782,7 @@ def _files(args):
     if args.download:
         _download_files(
             base_url,
+            args.api_version,
             args.format,
             filelist,
             Path(args.output_dir),
@@ -751,8 +795,6 @@ def _files(args):
         if len(filelist) > 0:
             if args.verbose:
                 print()
-            # max_filename_len = max([len(f["filename"]) for f in filelist])
-            # max_filename_len = max(max_filename_len, len("Filename"))
             print(
                 f"{'Date/time':{datetime_width}s} {'Instrument':{instrument_width}s} {'Product':{max_productname_width}s} {'Filesize':{filesize_width}s} {'Filename':{max_filename_width}s}"
             )
@@ -792,9 +834,9 @@ def _files(args):
             )
 
 
-def _events(args):
-    """Handle printing the ``/instruments/{instrument}/products/{product}``
-    endpoint results, optionally downloading the files.
+def _events(args: argparse.Namespace):
+    """Handle printing the ``/instruments/events/products/{event_type}``
+    endpoint results.
     """
     filters = {}
 
@@ -809,15 +851,15 @@ def _events(args):
     if args.carrington_rotation is not None:
         filters["cr"] = args.carrington_rotation
 
-    if args.every is not None:
-        filters["every"] = args.every
+    if args.instrument is not None:
+        filters["instrument"] = args.instrument
 
     try:
-        files_response = files(
-            "events",
+        events_response = events(
             args.type,
             filters,
             base_url=base_url,
+            api_version=args.api_version,
             verbose=args.verbose,
             client="cli",
         )
@@ -826,18 +868,16 @@ def _events(args):
         return
 
     if args.verbose:
-        instrument = files_response["instrument"]
-        product = files_response["product"]
-        start_date = files_response["start-date"]
-        end_date = files_response["end-date"]
-        filesize = _sizeof_fmt(files_response["total_filesize"])
+        instrument = events_response["instrument"]
+        product = events_response["type"]
+        start_date = events_response["start-date"]
+        end_date = events_response["end-date"]
         print(f"Instrument : {instrument}")
         print(f"Product    : {product}")
         print(f"Start date : {start_date}")
         print(f"End date   : {end_date}")
-        print(f"Filesize   : {filesize}")
 
-    filelist = files_response["files"]
+    eventlist = events_response["events"]
     max_eventtype_width = 7
     instrument_width = 10
     n_columns = os.get_terminal_size().columns
@@ -857,7 +897,7 @@ def _events(args):
         - 1,
         10,
     )
-    if len(filelist) > 0:
+    if len(eventlist) > 0:
         if args.verbose:
             print()
         print(
@@ -866,13 +906,13 @@ def _events(args):
         print(
             f"{'-' * date_width} {'-' * date_width} {'-' * instrument_width} {'-' * max_eventtype_width} {'-' * quadrant_width} {'-' * comment_width}"
         )
-    for f in filelist:
-        instrument = f["instrument"]
-        event_type = f["product"]
-        quadrant = f["quadrant"]
-        comments = textwrap.wrap(f["comment"], width=comment_width)
-        start_date = f["date-obs"]
-        end_date = f["date-end"]
+    for e in eventlist:
+        instrument = e["instrument"]
+        event_type = e["type"]
+        quadrant = e["quadrant"]
+        comments = textwrap.wrap(e["comment"], width=comment_width)
+        start_date = e["date-obs"]
+        end_date = e["date-end"]
         event_type = (
             event_type
             if len(event_type) <= max_eventtype_width
@@ -885,11 +925,11 @@ def _events(args):
             print(
                 f"{'':{date_width}s} {'':{date_width}s} {'':{instrument_width}s} {'':{max_eventtype_width}s} {'':{quadrant_width}s} {c:{comment_width}s}"
             )
-    if len(filelist) > 1:
+    if len(eventlist) > 1:
         print(
             f"{'-' * date_width} {'-' * date_width} {'-' * instrument_width} {'-' * max_eventtype_width} {'-' * quadrant_width} {'-' * comment_width}"
         )
-        print(f"{len(filelist):d} events")
+        print(f"{len(eventlist):d} events")
 
 
 def _print_help(args):
@@ -1094,8 +1134,8 @@ def main():
     events_parser.add_argument(
         "-t",
         "--type",
-        help='event type to return: "cavity", "cme", "jet", "loop", or "surge"',
-        default=None,
+        help='event type to return: "cavity", "cme", "jet", "loop", or "surge"; default to "all"',
+        default="all",
     )
     events_parser.add_argument(
         "-s",
@@ -1119,6 +1159,7 @@ def main():
         help="filter by events within the given Carrington Rotation",
         default=None,
     )
+    events_parser.add_argument("-i", "--instrument", help="instrument", default=None)
     events_parser.set_defaults(func=_events, parser=events_parser)
 
     # parse args and call appropriate sub-command
