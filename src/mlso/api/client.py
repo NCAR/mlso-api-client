@@ -6,30 +6,12 @@ interface is typically used like::
     >>> from mlso.api import client
     >>> client.about()
     {'documentation': 'https://mlso-api-client.readthedocs.io/en/latest/',
-    'homepage': 'https://www2.hao.ucar.edu/mlso',
-    'support': 'mlso_data_requests@ucar.edu',
-    'version': '0.3.1'}
+     'homepage': 'https://www2.hao.ucar.edu/mlso',
+     'support': 'mlso_data_requests@ucar.edu',
+     'version': '1.1.0'}
 
-The Unix command-line interface, ``mlsoapi``, is also available::
-
-    usage: mlsoapi [-h] [-v] [-u BASE_URL] [--verbose] [-q] {instruments,products,files} ...
-
-    MLSO API command line interface (mlso-api-client 1.0.0)
-
-    positional arguments:
-    {instruments,products,files}
-                            sub-command help
-        instruments         MLSO instruments
-        products            MLSO instruments
-        files               MLSO data files
-
-    options:
-    -h, --help            show this help message and exit
-    -v, --version         show program's version number and exit
-    -u BASE_URL, --base-url BASE_URL
-                            base URL for MLSO API
-    --verbose             output warnings
-    -q, --quiet           surpress informational messages
+The Unix command-line interface, ``mlsoapi``, is also available and accessed
+through the `main` routine in this module.
 """
 
 import argparse
@@ -122,26 +104,32 @@ def about(
 
 
 def instruments(
-    base_url: str = BASE_URL, api_version: str = API_VERSION, verbose: bool = False
+    base_url: str = BASE_URL,
+    api_version: str = API_VERSION,
+    verbose: bool = False,
 ):
     """Retrieve list of instruments from the ``/instruments/{instrument}``
     endpoint with some of their properties. For example::
 
         >>> from mlso.api import client
         >>> client.instruments()
-        [{'id': 'kcor',
-        'start-date': '2013-09-30T18:57:54',
-        'end-date': '2025-03-24T21:04:20',
-        'name': 'COSMO K-Coronagraph (KCor)'},
-        {'id': 'ucomp',
-        'start-date': '2021-07-15T17:31:43',
-        'end-date': '2025-03-24T21:03:55',
-        'name': 'Upgraded Coronal Multi-Polarimeter (UCoMP)'}]
+        [{'end-date': '2026-09-14T00:00:00',
+          'id': 'events',
+          'name': 'MLSO events',
+          'start-date': '2002-02-27T00:00:00'},
+         {'end-date': '2026-09-22T20:07:18',
+          'id': 'kcor',
+          'name': 'COSMO K-Coronagraph (KCor)',
+          'start-date': '2013-09-30T18:57:54'},
+         {'end-date': '2025-03-24T21:03:55',
+          'id': 'ucomp',
+          'name': 'Upgraded Coronal Multi-Polarimeter (UCoMP)',
+          'start-date': '2021-07-15T17:31:43'}]
 
     Or::
 
         >>> [i["id"] for i in client.instruments()]
-        ['kcor', 'ucomp']
+        ['events', 'kcor', 'ucomp']
 
     ``instruments`` can raise a ``ServerError`` if there is a problem with the
     web request.
@@ -653,7 +641,7 @@ def _download_files(
     """
     if not output_dir.is_dir():
         if verbose:
-            print(f"creating output path {output_dir}")
+            logger.debug(f"creating output path {output_dir}")
         os.makedirs(output_dir)
 
     if format_name == "fits":
@@ -794,7 +782,7 @@ def _files(args: argparse.Namespace):
         product_sep = "-" * max_productname_width
         if len(filelist) > 0:
             if args.verbose:
-                print()
+                logger.debug()
             print(
                 f"{'Date/time':{datetime_width}s} {'Instrument':{instrument_width}s} {'Product':{max_productname_width}s} {'Filesize':{filesize_width}s} {'Filename':{max_filename_width}s}"
             )
@@ -848,9 +836,6 @@ def _events(args: argparse.Namespace):
     if args.end_date is not None:
         filters["end-date"] = args.end_date
 
-    if args.carrington_rotation is not None:
-        filters["cr"] = args.carrington_rotation
-
     if args.instrument is not None:
         filters["instrument"] = args.instrument
 
@@ -869,13 +854,13 @@ def _events(args: argparse.Namespace):
 
     if args.verbose:
         instrument = events_response["instrument"]
-        product = events_response["type"]
+        event_type = events_response["type"]
         start_date = events_response["start-date"]
         end_date = events_response["end-date"]
-        print(f"Instrument : {instrument}")
-        print(f"Product    : {product}")
-        print(f"Start date : {start_date}")
-        print(f"End date   : {end_date}")
+        logger.info(f"Instrument : {instrument}")
+        logger.info(f"Event type : {event_type}")
+        logger.info(f"Start date : {start_date}")
+        logger.info(f"End date   : {end_date}")
 
     eventlist = events_response["events"]
     max_eventtype_width = 7
@@ -899,7 +884,7 @@ def _events(args: argparse.Namespace):
     )
     if len(eventlist) > 0:
         if args.verbose:
-            print()
+            logger.debug("")
         print(
             f"{'Start date/time':{date_width}s} {'End date/time':{date_width}s} {'Instrument':{instrument_width}} {'Type':{max_eventtype_width}s} {'Quadrant':{quadrant_width}s} {'Comment':{comment_width}s}"
         )
@@ -1151,14 +1136,6 @@ def main():
         help='return events before this date, e.g., "2026-04-01" or "2026-04-01T22:36:15"',
         default=None,
     )
-    events_parser.add_argument(
-        "-c",
-        "--carrington-rotation",
-        "--cr",
-        metavar="CARRINGTON_ROTATION_NUMBER",
-        help="filter by events within the given Carrington Rotation",
-        default=None,
-    )
     events_parser.add_argument("-i", "--instrument", help="instrument", default=None)
     events_parser.set_defaults(func=_events, parser=events_parser)
 
@@ -1169,7 +1146,7 @@ def main():
     # printed twice in that case
     if args.verbose and args.func != _about:
         _about(args)
-        print()
+        logger.debug("")
 
     if parser.get_default("func"):
         try:
