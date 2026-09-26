@@ -197,6 +197,32 @@ def instruments(
     return results
 
 
+def instrument_info(
+    instrument: str,
+    /,
+    *,
+    base_url: str = BASE_URL,
+    api_version: str = API_VERSION,
+    verbose: bool = False,
+) -> dict:
+    """Return info about an instrument's data available through the API."""
+    url = f"{base_url}/{api_version}/instruments/{instrument}/"
+    if verbose:
+        logger.debug(f"URL: {url}")
+
+    try:
+        r = requests.get(url)
+    except requests.exceptions.ConnectionError as e:
+        raise ServerError(f"Connection error reaching {url}")
+
+    j = r.json()
+
+    if verbose:
+        logger.debug(pformat(j))
+
+    return j
+
+
 def products(
     instrument,
     base_url: str = BASE_URL,
@@ -252,6 +278,34 @@ def products(
         j = r.json()
         msg = j["message"]
         raise ServerError(f"Server response: {r.status_code} {r.reason} ({msg})")
+
+    j = r.json()
+
+    if verbose:
+        logger.debug(pformat(j))
+
+    return j
+
+
+def product_info(
+    instrument: str,
+    product: str,
+    /,
+    *,
+    base_url: str = BASE_URL,
+    api_version: str = API_VERSION,
+    verbose: bool = False,
+) -> dict:
+    """Return info about the data of a given product of instrument available
+    through the API."""
+    url = f"{base_url}/{api_version}/instruments/{instrument}/products/{product}"
+    if verbose:
+        logger.debug(f"URL: {url}")
+
+    try:
+        r = requests.get(url)
+    except requests.exceptions.ConnectionError as e:
+        raise ServerError(f"Connection error reaching {url}")
 
     j = r.json()
 
@@ -458,7 +512,7 @@ def _about(args):
         print(e)
 
 
-def _instruments(args):
+def _instruments(args: argparse.Namespace):
     """Handle printing the ``/instruments`` endpoint results for the command line
     interface.
     """
@@ -469,16 +523,18 @@ def _instruments(args):
         print(e)
         return
 
-    print(f"{'ID':8s} {'Instrument name':44s} Dates available")
-    print(f"{'-' * 8} {'-' * 44} {'-' * 23}")
+    if vars(args)["1"]:
+        print(" ".join([i["id"] for i in instruments_response]))
+    else:
+        print(f"{'ID':8s} {'Instrument name':44s} Dates available")
+        print(f"{'-' * 8} {'-' * 44} {'-' * 23}")
+        for i in instruments_response:
+            instrument = i["id"]
+            instrument_name = i["name"]
+            start_date = i["start-date"][:10]
+            end_date = i["end-date"][:10]
 
-    for i in instruments_response:
-        instrument = i["id"]
-        instrument_name = i["name"]
-        start_date = i["start-date"][:10]
-        end_date = i["end-date"][:10]
-
-        print(f"{instrument:8s} {instrument_name:44s} {start_date}...{end_date}")
+            print(f"{instrument:8s} {instrument_name:44s} {start_date}...{end_date}")
 
 
 def _products(args):
@@ -494,19 +550,53 @@ def _products(args):
         print(e)
         return
 
-    print(f"{'ID':13s} {'Title':22s} {'Description'}")
-    print(f"{'-' * 13} {'-' * 22} {'-' * 55}")
-    for p in products_response["products"]:
-        title = p["title"]
-        product_id = p["id"]
-        description = textwrap.wrap(p["description"], width=55)
-        if len(description) == 0:
-            description = [""]
-        for description_line in description:
-            print(f"{product_id:13s} {title:22s} {description_line}")
-            product_id = ""
-            title = ""
-            name = ""
+    if vars(args)["1"]:
+        print(" ".join(p["id"] for p in products_response["products"]))
+    else:
+        print(f"{'ID':13s} {'Title':22s} {'Description'}")
+        print(f"{'-' * 13} {'-' * 22} {'-' * 55}")
+        for p in products_response["products"]:
+            name = p["name"]
+            product_id = p["id"]
+            description = textwrap.wrap(p["description"], width=55)
+            if len(description) == 0:
+                description = [""]
+            for description_line in description:
+                print(f"{product_id:13s} {name:22s} {description_line}")
+                product_id = ""
+                title = ""
+                name = ""
+
+
+def _info(args):
+    """Handle printing the ``/instruments/{instrument}/products/{product}``
+    endpoint results for the command line interface.
+    """
+    base_url = LOCAL_BASE_URL if args.local else args.base_url
+    try:
+        if args.product is not None:
+            info = product_info(
+                args.instrument, args.product, base_url=base_url, verbose=args.verbose
+            )
+            key_width = 12
+            print(f"{'Name':{key_width}s} : {info['name']}")
+            print(f"{'ID':{key_width}s} : {info['id']}")
+            print(f"{'Description':{key_width}s} : {info['description']}")
+            print(f"{'Filters':{key_width}s} : {', '.join(info['filters'])}")
+            print(f"{'Formats':{key_width}s} : {', '.join(info['formats'])}")
+        else:
+            info = instrument_info(
+                args.instrument, base_url=base_url, verbose=args.verbose
+            )
+            key_width = 12
+            print(f"{'Name':{key_width}s} : {info['name']}")
+            print(f"{'DOI':{key_width}s} : {info['doi']}")
+            print(f"{'Landing page':{key_width}s} : {info['landing-page']}")
+            print(f"{'Start date':{key_width}s} : {info['dates']['start-date']}")
+            print(f"{'End date':{key_width}s} : {info['dates']['end-date']}")
+    except ServerError as e:
+        print(e)
+        return
 
 
 def _download_files(
@@ -813,28 +903,52 @@ def main():
     ::
 
         $ mlsoapi --help
-        usage: mlsoapi [-h] [-v] [-u BASE_URL] [--verbose] [-q] {instruments,products,files} ...
+        usage: mlsoapi [-h] [-v] [-u URL] [--local] [--api-version VERSION] [--verbose] [-q]
+                       {about,instruments,products,info,files,events} ...
 
-        MLSO API command line interface (mlso-api-client 0.3.2)
-
-        positional arguments:
-        {instruments,products,files}
-                                sub-command help
-            instruments         MLSO instruments
-            products            MLSO instruments
-            files               MLSO data files
+        MLSO API command line interface (mlso-api-client 1.1.0)
 
         options:
         -h, --help            show this help message and exit
         -v, --version         show program's version number and exit
-        -u BASE_URL, --base-url BASE_URL
-                                base URL for MLSO API
-        --verbose             output warnings
+        -u, --base-url URL    use given base URL for MLSO API instead of the
+                              production URL; default is the production URL at
+                              http://api.mlso.ucar.edu
+        --local               set base URL for MLSO API to localhost
+                              (http://127.0.0.1:5000) instead of the production
+                              URL
+        --api-version VERSION
+                              API version to use; default is v1, the only
+                              version currently available
+        --verbose             output all queries URLs and JSON responses
         -q, --quiet           surpress informational messages
+
+        Valid subcommands:
+          Use 'mlsoapi <subcommand> --help' for more detailed for any of the
+          below subcommands
+
+          {about,instruments,products,info,files,events}
+                              Subcommand description
+            about             Information about the MLSO API server
+            instruments       MLSO datasets/instruments with data available
+                              through the API
+            products          Products for a given instrument
+            info              More detailed information about an instrument or
+                              product
+            files             Data files for a given instrument and product
+            events            List matching events
+
+        This commandline utility provides access to the data available at Mauna
+        Loa Solar Observatory through the MLSO API. See the full documentation
+        at https://mlso-api-client.readthedocs.io/en/latest/ for more
+        information.
     """
     name = f"MLSO API command line interface (mlso-api-client {__version__})"
 
-    epilog = """This commandline utility provides access to the data at Mauna Loa Solar Observatory. See the documentation at https://mlso-api-client.readthedocs.io/en/latest/ for more information.
+    epilog = """This commandline utility provides access to the data
+    available at Mauna Loa Solar Observatory through the MLSO API. See the full
+    documentation at https://mlso-api-client.readthedocs.io/en/latest/ for more
+    information.
 """
     parser = argparse.ArgumentParser(description=name, epilog=epilog)
 
@@ -844,85 +958,166 @@ def main():
     parser.set_defaults(func=_print_help, parser=parser)
 
     parser.add_argument(
-        "-u", "--base-url", help="base URL for MLSO API", default=BASE_URL
+        "-u",
+        "--base-url",
+        metavar="URL",
+        help=f"use given base URL for MLSO API instead of the production URL; default is the production URL at {BASE_URL}",
+        default=BASE_URL,
     )
     parser.add_argument(
-        "--local", help="set base URL for MLSO API to localhost", action="store_true"
+        "--local",
+        help=f"set base URL for MLSO API to localhost ({LOCAL_BASE_URL}) instead of the production URL",
+        action="store_true",
     )
-    parser.add_argument("--verbose", help="output warnings", action="store_true")
+    parser.add_argument(
+        "--api-version",
+        metavar="VERSION",
+        help=f"API version to use; default is {API_VERSION}, the only version currently available",
+        default=API_VERSION,
+    )
+    parser.add_argument(
+        "--verbose",
+        help="output all queries URLs and JSON responses",
+        action="store_true",
+    )
     parser.add_argument(
         "-q", "--quiet", help="surpress informational messages", action="store_true"
     )
 
-    subparsers = parser.add_subparsers(help="sub-command help")
+    subparsers = parser.add_subparsers(
+        title="Valid subcommands",
+        description="Use 'mlsoapi <subcommand> --help' for more detailed for any of the below subcommands",
+        help="Subcommand description",
+    )
 
     about_parser = subparsers.add_parser(
         "about", help="Information about the MLSO API server"
     )
     about_parser.set_defaults(func=_about, parser=about_parser)
 
-    instruments_parser = subparsers.add_parser("instruments", help="MLSO instruments")
+    instruments_parser = subparsers.add_parser(
+        "instruments",
+        help="MLSO datasets/instruments with data available through the API",
+    )
+    instruments_parser.add_argument(
+        "-1", help="return only instrument IDs", action="store_true"
+    )
     instruments_parser.set_defaults(func=_instruments, parser=instruments_parser)
 
     products_parser = subparsers.add_parser(
-        "products", help="products for given instrument"
+        "products", help="Products for a given instrument"
     )
     products_parser.add_argument("-i", "--instrument", help="instrument", default=None)
+    products_parser.add_argument(
+        "-1", help="return only product IDs", action="store_true"
+    )
     products_parser.set_defaults(func=_products, parser=products_parser)
 
+    info_parser = subparsers.add_parser(
+        "info", help="More detailed information about an instrument or product"
+    )
+    info_parser.add_argument("-i", "--instrument", help="instrument", default=None)
+    info_parser.add_argument("-p", "--product", help="product", default=None)
+    info_parser.set_defaults(func=_info, parser=info_parser)
+
     files_parser = subparsers.add_parser(
-        "files", help="data files for given instrument/product"
+        "files", help="Data files for a given instrument and product"
     )
     files_parser.add_argument("-i", "--instrument", help="instrument", default=None)
     files_parser.add_argument("-p", "--product", help="product", default=None)
     files_parser.add_argument(
-        "--wave-region", help="wave region, e.g., 1074, 1079, etc.", default=None
+        "--wave-region",
+        help='filter by wave region, e.g., "1074", "1079", etc.; only used by some instruments',
+        default=None,
     )
     files_parser.add_argument(
-        "--obs-plan", help="observing plan: synoptic or waves", default=None
+        "--obs-plan",
+        help='filter by observing plan: "synoptic", "waves", or other special program; only used by some instruments',
+        default=None,
     )
-    files_parser.add_argument("-s", "--start-date", help="start date", default=None)
-    files_parser.add_argument("-e", "--end-date", help="end date", default=None)
+    files_parser.add_argument(
+        "-s",
+        "--start-date",
+        metavar="DATE",
+        help='return files after this date, e.g., "2026-04-01" or "2026-04-01T22:36:15"',
+        default=None,
+    )
+    files_parser.add_argument(
+        "-e",
+        "--end-date",
+        metavar="DATE",
+        help='return files before this date, e.g., "2026-04-01" or "2026-04-01T22:36:15"',
+        default=None,
+    )
     files_parser.add_argument(
         "-c",
         "--carrington-rotation",
         "--cr",
-        help="Carrington Rotation number",
+        metavar="CARRINGTON_ROTATION_NUMBER",
+        help="filter by files within the given Carrington Rotation",
         default=None,
     )
     files_parser.add_argument(
-        "--every", help="time to choose 1 file from", default=None
-    )
-    files_parser.add_argument("--event-type", help="event type: cme,...")
-    files_parser.add_argument(
-        "-d", "--download", help="download the displayed files", action="store_true"
+        "--every",
+        help='time to choose 1 file from, e.g., "1hr" to return a file from every hour in the time period',
+        default=None,
     )
     files_parser.add_argument(
-        "-u", "--username", help="email already registered at HAO website", default=None
+        "--event-type",
+        metavar="TYPE",
+        help='event type to search for files within: "cavity", "cme", "jet", "loop", or "surge"',
     )
     files_parser.add_argument(
-        "-o", "--output-dir", help="output directory for downloaded files", default="."
+        "-d", "--download", help="download the filtered files", action="store_true"
     )
     files_parser.add_argument(
-        "-f", "--format", help='file format: "fits" or "quicklook"', default="fits"
+        "-u",
+        "--username",
+        help=f"email address already registered at HAO website ({SIGNUP_URL})",
+        default=None,
+    )
+    files_parser.add_argument(
+        "-o",
+        "--output-dir",
+        help="output directory for downloaded files, will be created if it doesn't exist",
+        default=".",
+    )
+    files_parser.add_argument(
+        "-f",
+        "--format",
+        help='filter by file format: "fits" or "quicklook"',
+        default="fits",
     )
     files_parser.set_defaults(func=_files, parser=files_parser)
 
-    events_parser = subparsers.add_parser("events", help="matching events")
+    events_parser = subparsers.add_parser("events", help="List matching events")
     events_parser.add_argument(
-        "-t", "--type", help='event type, e.g., "cme"', default=None
+        "-t",
+        "--type",
+        help='event type to return: "cavity", "cme", "jet", "loop", or "surge"',
+        default=None,
     )
-    events_parser.add_argument("-s", "--start-date", help="start date", default=None)
-    events_parser.add_argument("-e", "--end-date", help="end date", default=None)
+    events_parser.add_argument(
+        "-s",
+        "--start-date",
+        metavar="DATE",
+        help='return events after this date, e.g., "2026-04-01" or "2026-04-01T22:36:15"',
+        default=None,
+    )
+    events_parser.add_argument(
+        "-e",
+        "--end-date",
+        metavar="DATE",
+        help='return events before this date, e.g., "2026-04-01" or "2026-04-01T22:36:15"',
+        default=None,
+    )
     events_parser.add_argument(
         "-c",
         "--carrington-rotation",
         "--cr",
-        help="Carrington Rotation number",
+        metavar="CARRINGTON_ROTATION_NUMBER",
+        help="filter by events within the given Carrington Rotation",
         default=None,
-    )
-    events_parser.add_argument(
-        "--every", help="time to choose 1 file from", default=None
     )
     events_parser.set_defaults(func=_events, parser=events_parser)
 
