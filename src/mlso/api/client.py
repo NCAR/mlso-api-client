@@ -9,6 +9,35 @@ interface is typically used like::
      'homepage': 'https://www2.hao.ucar.edu/mlso',
      'support': 'mlso_data_requests@ucar.edu',
      'version': '1.1.0'}
+    >>> client.instruments()
+    [{'id': 'events',
+      'start-date': '2002-02-27T00:00:00',
+      'end-date': '2026-09-14T00:00:00',
+      'name': 'MLSO events'},
+     {'id': 'kcor',
+      'start-date': '2013-09-30T18:57:54',
+      'end-date': '2026-09-22T20:07:18',
+      'name': 'COSMO K-Coronagraph (KCor)'},
+     {'id': 'ucomp',
+      'start-date': '2021-07-15T17:31:43',
+      'end-date': '2025-03-24T21:03:55',
+      'name': 'Upgraded Coronal Multi-Polarimeter (UCoMP)'}]
+    >>> client.files("ucomp", "l2", {"start-date": "2025-3-24", "wave-region": "789"})
+    {'end-date': '2025-03-24T21:03:55',
+     'files': [{'date-obs': '2025-03-24T20:06:52',
+       'filename': '20250324.200652.ucomp.789.l2.fts',
+       'filesize': 31501440,
+       'instrument': 'ucomp',
+       'obs-plan': 'synoptic-original-lines.cbk',
+       'product': 'l2',
+       'url': 'http://127.0.0.1:5000/v1/download?obsday-id=10137&client=python&instrument=ucomp&filename=20250324.200652.ucomp.789.l2.fts&format=fits',
+       'wave-region': '789',
+       'wavelengths': 5}],
+     'instrument': 'ucomp',
+     'n_files': 1,
+     'product': 'l2',
+     'start-date': '2025-3-24',
+     'total_filesize': 31501440}
 
 The Unix command-line interface, ``mlsoapi``, is also available and accessed
 through the `main` routine in this module.
@@ -27,8 +56,8 @@ import textwrap
 import requests
 import tqdm
 
-
 from . import __version__
+
 
 BASE_URL = "http://api.mlso.ucar.edu"
 LOCAL_BASE_URL = "http://127.0.0.1:5000"
@@ -65,6 +94,9 @@ class ServerError(Exception):
     """
 
     pass
+
+
+# Top-level Python API
 
 
 def about(
@@ -445,7 +477,8 @@ def files(
                     - ``every=1day``, or
                     - ``every=12hours``.
     ``event``       Return only files that occur during events of the given
-                    type, currently only "cme"
+                    type, currently only "cavity", "cme", "jet", "loop", or
+                    "surge".
     ``wave‑region`` Return only files for the given wave region (UCoMP only).
                     Valid values are "637", "706", "789", 1074", "1079".
     ``obs‑plan``    Return only files matching the given observing plan, e.g.:
