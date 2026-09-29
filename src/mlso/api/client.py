@@ -301,6 +301,7 @@ def instrument_info(
 
 def products(
     instrument,
+    dataset: bool = False,
     base_url: str = BASE_URL,
     api_version: str = API_VERSION,
     verbose: bool = False,
@@ -341,7 +342,8 @@ def products(
     ``products`` can raise a ``ServerError`` if there is a problem with the web
     request.
     """
-    url = f"{base_url}/{api_version}/instruments/{instrument}/products"
+    type_name = "datasets" if dataset else "instruments"
+    url = f"{base_url}/{api_version}/{type_name}/{instrument}/products"
     if verbose:
         logger.debug(f"URL: {url}")
 
@@ -687,18 +689,32 @@ def _datasets(args: argparse.Namespace):
             print(f"{dataset:8s} {dataset_name:44s} {start_date}...{end_date}")
 
 
-def _products(args):
-    """Handle printing the ``/instruments/{instrument}/products`` endpoint
-    results for the command line interface.
+def _products(args: argparse.Namespace):
+    """Handle printing the ``/instruments/{instrument}/products`` or
+    ``/datasets/{dataset}/products`` endpoint for the commandline interface,
+    depending on if ``--instrument`` or ``--dataset`` is present.
     """
     base_url = LOCAL_BASE_URL if args.local else args.base_url
+    if (args.instrument is not None and args.dataset is not None) or (
+        args.instrument is None and args.dataset is None
+    ):
+        args.parser.error("must specify exactly one of --instrument or --dataset")
     try:
-        products_response = products(
-            args.instrument,
-            base_url=base_url,
-            api_version=args.api_version,
-            verbose=args.verbose,
-        )
+        if args.instrument is not None:
+            products_response = products(
+                args.instrument,
+                base_url=base_url,
+                api_version=args.api_version,
+                verbose=args.verbose,
+            )
+        else:
+            products_response = products(
+                args.dataset,
+                dataset=True,
+                base_url=base_url,
+                api_version=args.api_version,
+                verbose=args.verbose,
+            )
     except ServerError as e:
         print(e)
         return
@@ -706,7 +722,7 @@ def _products(args):
     if vars(args)["1"]:
         print(" ".join(p["id"] for p in products_response["products"]))
     else:
-        print(f"{'ID':13s} {'Title':22s} {'Description'}")
+        print(f"{'ID':13s} {'Name':22s} {'Description'}")
         print(f"{'-' * 13} {'-' * 22} {'-' * 55}")
         for p in products_response["products"]:
             name = p["name"]
@@ -955,8 +971,8 @@ def _files(args: argparse.Namespace):
             )
 
 
-def _data(args: argparse.Namespace):
-    """Handle printing the ``/instruments/events/products/{event_type}``
+def _eventdata(args: argparse.Namespace):
+    """Handle printing the ``/datasets/events/products/{event_type}/data``
     endpoint results.
     """
     filters = {}
@@ -974,8 +990,8 @@ def _data(args: argparse.Namespace):
 
     try:
         events_response = data(
-            "events",  # replace
-            args.type,
+            args.dataset,  # replace
+            args.product,
             filters,
             base_url=base_url,
             api_version=args.api_version,
@@ -1049,6 +1065,11 @@ def _data(args: argparse.Namespace):
             f"{'-' * date_width} {'-' * date_width} {'-' * instrument_width} {'-' * max_eventtype_width} {'-' * quadrant_width} {'-' * comment_width}"
         )
         print(f"{len(eventlist):d} events")
+
+
+def _data(args: argparse.Namespace):
+    if args.dataset == "events":
+        _eventdata(args)
 
 
 def _print_help(args):
@@ -1167,6 +1188,7 @@ def main():
         "products", help="Products for a given instrument"
     )
     products_parser.add_argument("-i", "--instrument", help="instrument", default=None)
+    products_parser.add_argument("-d", "--dataset", help="dataset", default=None)
     products_parser.add_argument(
         "-1", help="return only product IDs", action="store_true"
     )
@@ -1263,8 +1285,8 @@ def main():
         default="all",
     )
     data_parser.add_argument(
-        "-t",
-        "--type",
+        "-p",
+        "--product",
         help='dataset product to return, e.g., "cavity", "cme", "jet", "loop", or "surge"; default to "all"',
         default="all",
     )
