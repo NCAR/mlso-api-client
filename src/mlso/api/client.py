@@ -217,6 +217,62 @@ def instruments(
     return results
 
 
+def datasets(
+    base_url: str = BASE_URL,
+    api_version: str = API_VERSION,
+    verbose: bool = False,
+):
+    url = f"{base_url}/{api_version}/datasets"
+    if verbose:
+        logger.debug(f"URL: {url}")
+
+    try:
+        r = requests.get(url)
+    except requests.exceptions.ConnectionError as e:
+        raise ServerError(f"Connection error reaching {url}")
+
+    if not r.ok:
+        raise ServerError(f"Server response: {r.status_code} {r.reason}")
+
+    datasets = r.json()
+    if verbose:
+        logger.debug(pformat(datasets))
+
+    datasets = sorted(datasets)
+
+    results = []
+
+    for dataset in datasets:
+        url = f"{base_url}/{api_version}/datasets/{dataset}/"
+        if verbose:
+            logger.debug(f"URL: {url}")
+
+        try:
+            r = requests.get(url)
+        except requests.exceptions.ConnectionError as e:
+            raise ServerError(f"Connection error reaching {url}")
+
+        j = r.json()
+
+        if verbose:
+            logger.debug(pformat(j))
+
+        dates = j["dates"]
+        full_name = j["name"]
+        start_date = dates["start-date"]
+        end_date = dates["end-date"]
+
+        i = {
+            "id": dataset,
+            "start-date": start_date,
+            "end-date": end_date,
+            "name": j["name"],
+        }
+        results.append(i)
+
+    return results
+
+
 def instrument_info(
     instrument: str,
     /,
@@ -518,7 +574,7 @@ def files(
     return j
 
 
-def datasets(
+def data(
     dataset_id: str,
     product_id: str,
     filters: dict[str, str] | None = None,
@@ -602,6 +658,33 @@ def _instruments(args: argparse.Namespace):
             end_date = i["end-date"][:10]
 
             print(f"{instrument:8s} {instrument_name:44s} {start_date}...{end_date}")
+
+
+def _datasets(args: argparse.Namespace):
+    """Handle printing the ``/datasets`` endpoint results for the command line
+    interface.
+    """
+    base_url = LOCAL_BASE_URL if args.local else args.base_url
+    try:
+        datasets_response = datasets(
+            base_url, api_version=args.api_version, verbose=args.verbose
+        )
+    except ServerError as e:
+        print(e)
+        return
+
+    if vars(args)["1"]:
+        print(" ".join([i["id"] for i in datasets_response]))
+    else:
+        print(f"{'ID':8s} {'Dataset name':44s} Dates available")
+        print(f"{'-' * 8} {'-' * 44} {'-' * 23}")
+        for i in datasets_response:
+            dataset = i["id"]
+            dataset_name = i["name"]
+            start_date = i["start-date"][:10]
+            end_date = i["end-date"][:10]
+
+            print(f"{dataset:8s} {dataset_name:44s} {start_date}...{end_date}")
 
 
 def _products(args):
@@ -872,7 +955,7 @@ def _files(args: argparse.Namespace):
             )
 
 
-def _events(args: argparse.Namespace):
+def _data(args: argparse.Namespace):
     """Handle printing the ``/instruments/events/products/{event_type}``
     endpoint results.
     """
@@ -890,8 +973,8 @@ def _events(args: argparse.Namespace):
         filters["instrument"] = args.instrument
 
     try:
-        events_response = datasets(
-            "events",
+        events_response = data(
+            "events",  # replace
             args.type,
             filters,
             base_url=base_url,
@@ -1166,29 +1249,41 @@ def main():
     )
     files_parser.set_defaults(func=_files, parser=files_parser)
 
-    events_parser = subparsers.add_parser("events", help="List matching events")
-    events_parser.add_argument(
-        "-t",
-        "--type",
-        help='event type to return: "cavity", "cme", "jet", "loop", or "surge"; default to "all"',
+    datasets_parser = subparsers.add_parser("datasets", help="List available datasets")
+    datasets_parser.add_argument(
+        "-1", help="return only dataset IDs", action="store_true"
+    )
+    datasets_parser.set_defaults(func=_datasets, parser=datasets_parser)
+
+    data_parser = subparsers.add_parser("data", help="List matching events")
+    data_parser.add_argument(
+        "-d",
+        "--dataset",
+        help="dataset to retrieve, i.e., 'events'",
         default="all",
     )
-    events_parser.add_argument(
+    data_parser.add_argument(
+        "-t",
+        "--type",
+        help='dataset product to return, e.g., "cavity", "cme", "jet", "loop", or "surge"; default to "all"',
+        default="all",
+    )
+    data_parser.add_argument(
         "-s",
         "--start-date",
         metavar="DATE",
-        help='return events after this date, e.g., "2026-04-01" or "2026-04-01T22:36:15"',
+        help='return data after this date, e.g., "2026-04-01" or "2026-04-01T22:36:15"',
         default=None,
     )
-    events_parser.add_argument(
+    data_parser.add_argument(
         "-e",
         "--end-date",
         metavar="DATE",
-        help='return events before this date, e.g., "2026-04-01" or "2026-04-01T22:36:15"',
+        help='return data before this date, e.g., "2026-04-01" or "2026-04-01T22:36:15"',
         default=None,
     )
-    events_parser.add_argument("-i", "--instrument", help="instrument", default=None)
-    events_parser.set_defaults(func=_events, parser=events_parser)
+    data_parser.add_argument("-i", "--instrument", help="instrument", default=None)
+    data_parser.set_defaults(func=_data, parser=data_parser)
 
     # parse args and call appropriate sub-command
     args = parser.parse_args()
