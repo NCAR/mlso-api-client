@@ -518,8 +518,9 @@ def files(
     return j
 
 
-def events(
-    type: str,
+def datasets(
+    dataset_id: str,
+    product_id: str,
     filters: dict[str, str] | None = None,
     /,
     *,
@@ -528,16 +529,32 @@ def events(
     verbose: bool = False,
     client: str | None = "python",
 ):
-    """Thin wrapper to `files` call with "events" as the instrument."""
-    return files(
-        "events",
-        type,
-        filters,
-        base_url=base_url,
-        api_version=api_version,
-        verbose=verbose,
-        client=client,
-    )
+    """."""
+    url = f"{base_url}/{api_version}/datasets/{dataset_id}/products/{product_id}/data"
+
+    if len(filters) > 0:
+        url += "?" + "&".join([f"{f}={filters[f]}" for f in filters])
+
+    url += ("?" if len(filters) == 0 else "&") + f"client={client}"
+
+    if verbose:
+        logger.debug(f"URL: {url}")
+
+    try:
+        r = requests.get(url)
+    except requests.exceptions.ConnectionError as e:
+        raise ServerError(f"Connection error reaching {url}")
+
+    if not r.ok:
+        j = r.json()
+        msg = j["message"]
+        raise ServerError(f"Server response: {r.status_code} {r.reason} ({msg})")
+
+    j = r.json()
+    if verbose:
+        logger.debug(pformat(j))
+
+    return j
 
 
 # Command line interface sub-command handlers
@@ -873,7 +890,8 @@ def _events(args: argparse.Namespace):
         filters["instrument"] = args.instrument
 
     try:
-        events_response = events(
+        events_response = datasets(
+            "events",
             args.type,
             filters,
             base_url=base_url,
