@@ -57,6 +57,7 @@ dev = [
   "black",
   "sphinx_rtd_theme",
   "myst-parser",
+  "sphinx-mdinclude",
 ]
 
 [project.scripts]

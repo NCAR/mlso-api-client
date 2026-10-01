@@ -9,9 +9,9 @@ The MLSO data API is hosted at:
 http://api.mlso.ucar.edu/
 ```
 
-There could potentially be multiple API versions, as it changes in the future.
-The current version is "v1", currently the only API version. The base URL for
-all of the following endpoints is:
+There could potentially be multiple API versions, as changes are made in the
+future. The current version is "v1", currently the only API version. So,
+currently, the following endpoints are begin:
 
 ```
 http://api.mlso.ucar.edu/v1
@@ -29,7 +29,7 @@ $ curl -s "http://api.mlso.ucar.edu/v1/about" | python -m json.tool
   "documentation": "https://mlso-api-client.readthedocs.io/en/latest/",
   "homepage": "https://www2.hao.ucar.edu/mlso",
   "support": "mlso_data_requests@ucar.edu",
-  "version": "1.0.0"
+  "version": "1.1.0"
 }
 ```
 
@@ -56,7 +56,7 @@ $ curl -s "http://api.mlso.ucar.edu/v1/instruments" | python -m json.tool
 
 The names listed are the "instrument IDs" that are used in other endpoints to
 identify instruments. Data from more instruments will be made available in the
-future.
+future. In the MLSO API, instruments contain products which contain files.
 
 ### `HTTP GET /instruments/<instrument-id>`
 
@@ -244,7 +244,8 @@ The JSON response for a registered username would be:
 }
 ```
 
-Or if the username is not found, the response will be a 404 NOT FOUND with the following JSON response:
+Or if the username is not found, the response will be a 404 NOT FOUND with the
+following JSON response:
 
 ``` JSON
 {
@@ -252,14 +253,22 @@ Or if the username is not found, the response will be a 404 NOT FOUND with the f
 }
 ```
 
-The response contains a "session" cookie in the header that must be passed back in the download URL GET requests. The cookie will look something like:
+The response contains a "session" cookie in the header that must be passed back
+in the download URL GET requests. The cookie will look something like:
 
 ```
 Set-Cookie: session=FrFClgPOPeNZVR-r44Yn5jVTILVZ-2cfWRh5ilsLbRQ; Expires=Fri, 25 Jul 2025 15:51:18 GMT; HttpOnly; Path=/
 ```
 
-And you should pass back this cookie in the download URL GET request with a line in the header of the request like:
+And you should pass back this cookie in the download URL GET request with a
+line in the header of the request like:
 
 ```
 Cookie: session=FrFClgPOPeNZVR-r44Yn5jVTILVZ-2cfWRh5ilsLbRQ
 ```
+
+### `HTTP GET /datasets`
+### `HTTP GET /datasets/<dataset-id>`
+### `HTTP GET /datasets/<dataset-id>/products`
+### `HTTP GET /datasets/<dataset-id>/products/<product-id>`
+### `HTTP GET /datasets/<dataset-id>/products/<product-id>/data`

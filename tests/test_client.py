@@ -7,38 +7,65 @@ import pytest
 from mlso.api import client
 
 
-def test_about(base_url, api_version, username):
+def test_about(base_url: str, api_version: str, username: str):
+    fields = ["documentation", "homepage", "support", "version"]
     about_response = client.about(base_url=base_url, api_version=api_version)
     assert type(about_response) == dict
+    for f in fields:
+        assert f in about_response
 
 
 def test_instruments(base_url, api_version, username):
+    instruments = ["kcor", "ucomp"]
     instruments_response = client.instruments(
         base_url=base_url, api_version=api_version
     )
     assert type(instruments_response) == list
+    assert set(instruments) == set([i["id"] for i in instruments_response])
 
 
-def test_products(base_url, api_version, username):
+def test_ucomp_products(base_url: str, api_version: str, username: str):
+    ucomp_standard_products = ["mean", "median", "l2", "l2average", "density", "all"]
     ucomp_products_response = client.products(
         "ucomp", base_url=base_url, api_version=api_version
     )
     ucomp_products = ucomp_products_response["products"]
-    assert len(ucomp_products) == 9  # 8 UCoMP products + "all"
+    assert len(ucomp_products) == len(ucomp_standard_products)
     for p in ucomp_products:
         assert "id" in p
-        assert "title" in p
+        assert "name" in p
         assert "description" in p
 
+    assert set(ucomp_standard_products) == set([p["id"] for p in ucomp_products])
+
+
+def test_kcor_products(base_url, api_version, username):
+    kcor_standard_products = [
+        "pb",
+        "nrgf",
+        "pbavg",
+        "nrgfavg",
+        "pbextavg",
+        "nrgfextavg",
+        "pbavgenh",
+        "pbextavgenh",
+        "nrgfavgenh",
+        "nrgfextavgenh",
+        "pbdiff",
+        "nrgf+diff",
+        "all",
+    ]
     kcor_products_response = client.products(
         "kcor", base_url=base_url, api_version=api_version
     )
     kcor_products = kcor_products_response["products"]
-    assert len(kcor_products) == 12  # 11 KCor products + "all"
+    assert len(kcor_products) == len(kcor_standard_products)  # 11 KCor products + "all"
     for p in kcor_products:
         assert "id" in p
-        assert "title" in p
+        assert "name" in p
         assert "description" in p
+
+    assert set(kcor_standard_products) == set([p["id"] for p in kcor_products])
 
 
 def test_files(base_url, api_version, username):
