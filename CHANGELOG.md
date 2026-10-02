@@ -10,16 +10,12 @@ The format is based on [Keep a Changelog] and this project adheres to
 - Add event dataset.
 - Allow filtering of other instrument data by events.
 - Retrieve different format types: FITS files or quicklooks.
+- Updated documentation to match removed KCor and UCoMP products.
 
 ## [1.0.0] - Feb 26, 2026
 
 - Initial release providing a Python API, a command-line interface, and IDL
   API to access MLSO data via the MLSO API webservice.
-
-# [Unreleased]
-
-- Updated documentation to match removed KCor and UCoMP products.
-
 
 [Keep a Changelog]: https://keepachangelog.com/en/1.0.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
