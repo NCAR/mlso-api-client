@@ -2,4 +2,3 @@ mlso-api-client
 sphinx
 sphinx_rtd_theme
 myst-parser
-sphinx-mdinclude

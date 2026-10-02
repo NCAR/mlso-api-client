@@ -45,7 +45,8 @@ articles, and such.
 Submit Feedback
 ~~~~~~~~~~~~~~~
 
-The best way to send feedback is to file an issue at https://github.com/NCAR/mlso-api-client/issues.
+The best way to send feedback is to file an issue at
+https://github.com/NCAR/mlso-api-client/issues.
 
 If you are proposing a feature:
 
@@ -56,39 +57,52 @@ If you are proposing a feature:
 Get Started!
 ------------
 
-Ready to contribute? Here's how to set up `mlso-api-client` for local development.
+Ready to contribute? Here's how to set up `mlso-api-client` for local
+development.
 
 1. Fork the `mlso-api-client` repo on GitHub.
-2. Clone your fork locally::
+2. Clone your fork locally:
 
-    $ git clone git@github.com:your_name_here/mlso-api-client.git
+   .. code-block:: console
 
-3. Install your local copy into a virtualenv. Assuming you have virtualenvwrapper installed, this is how you set up your fork for local development::
+      $ git clone git@github.com:your_name_here/mlso-api-client.git
 
-    $ mkvirtualenv mlso-api-client
-    $ cd mlso-api-client/
-    $ python setup.py develop
+3. Install your local copy into a virtualenv. Assuming you have
+   virtualenvwrapper installed, this is how you set up your fork for local
+   development:
 
-4. Create a branch for local development::
+   .. code-block:: console
 
-    $ git checkout -b name-of-your-bugfix-or-feature
+      $ mkvirtualenv mlso-api-client
+      $ cd mlso-api-client/
+      $ python setup.py develop
+
+4. Create a branch for local development:
+
+   .. code-block:: console
+
+      $ git checkout -b name-of-your-bugfix-or-feature
 
    Now you can make your changes locally.
 
 5. When you're done making changes, check that your changes pass flake8 and the
-   tests, including testing other Python versions with tox::
+   tests, including testing other Python versions with tox:
 
-    $ flake8 mlso-api-client tests
-    $ python setup.py test or py.test
-    $ tox
+   .. code-block:: console
+
+      $ flake8 mlso-api-client tests
+      $ python setup.py test or py.test
+      $ tox
 
    To get flake8 and tox, just ``pip install`` them into your virtualenv.
 
-6. Commit your changes and push your branch to GitHub::
+6. Commit your changes and push your branch to GitHub:
 
-    $ git add .
-    $ git commit -m "Your detailed description of your changes."
-    $ git push origin name-of-your-bugfix-or-feature
+   .. code-block:: console
+
+      $ git add .
+      $ git commit -m "Your detailed description of your changes."
+      $ git push origin name-of-your-bugfix-or-feature
 
 7. Submit a pull request through the GitHub website.
 
@@ -108,7 +122,7 @@ Before you submit a pull request, check that it meets these guidelines:
 Tips
 ----
 
-To run a subset of tests::
+To run a subset of tests:
 
 .. code-block:: console
 
