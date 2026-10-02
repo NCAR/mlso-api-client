@@ -24,6 +24,10 @@ def test_instruments(base_url, api_version, username):
     assert set(instruments) == set([i["id"] for i in instruments_response])
 
 
+def test_instrument_info():
+    assert False
+
+
 def test_ucomp_products(base_url: str, api_version: str, username: str):
     ucomp_standard_products = ["mean", "median", "l2", "l2average", "density", "all"]
     ucomp_products_response = client.products(
@@ -39,7 +43,7 @@ def test_ucomp_products(base_url: str, api_version: str, username: str):
     assert set(ucomp_standard_products) == set([p["id"] for p in ucomp_products])
 
 
-def test_kcor_products(base_url, api_version, username):
+def test_kcor_products(base_url: str, api_version: str, username: str):
     kcor_standard_products = [
         "pb",
         "nrgf",
@@ -68,7 +72,11 @@ def test_kcor_products(base_url, api_version, username):
     assert set(kcor_standard_products) == set([p["id"] for p in kcor_products])
 
 
-def test_files(base_url, api_version, username):
+def test_product_info(base_url: str, api_version: str, username: str):
+    assert False
+
+
+def test_files(base_url: str, api_version: str, username: str):
     filters = {
         "wave-region": "789",
         "start-date": "2025-01-01",
@@ -80,7 +88,7 @@ def test_files(base_url, api_version, username):
     assert len(files_response["files"]) == 2
 
 
-def test_download_file(base_url, api_version, username):
+def test_download_file(base_url: str, api_version: str, username: str):
     if username is None:
         pytest.skip("specify username to test downloading")
 
@@ -96,3 +104,29 @@ def test_download_file(base_url, api_version, username):
     path = client.download_file(files_response["files"][0], ".")
     assert path.exists()
     os.remove(path)
+
+
+def test_datasets(base_url: str, api_version: str, username: str):
+    assert False
+
+
+def test_events_products(base_url: str, api_version: str, username: str):
+    events_standard_products = ["cavity", "cme", "jet", "loop", "surge", "all"]
+    products_response = client.products(
+        "events",
+        dataset=True,
+        base_url=base_url,
+        api_version=api_version,
+    )
+    events_products = products_response["products"]
+    assert len(events_products) == len(events_standard_products)
+    for p in events_products:
+        assert "id" in p
+        assert "name" in p
+        assert "description" in p
+
+    assert set(events_standard_products) == set([p["id"] for p in events_products])
+
+
+def test_data(base_url: str, api_version: str, username: str):
+    assert False
