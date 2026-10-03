@@ -148,4 +148,10 @@ def test_events_products(base_url: str, api_version: str, username: str):
 
 
 def test_data(base_url: str, api_version: str, username: str):
-    assert False
+    filters = {"start-date": "2026-04-01", "end-date": "2026-04-03"}
+    results = {"all": 2, "cavity": 0, "cme": 1, "jet": 0, "loop": 0, "surge": 0}
+    for t in results.keys():
+        data = client.data(
+            "events", t, filters, base_url=base_url, api_version=api_version
+        )
+        assert results[t] == len(data["events"])
