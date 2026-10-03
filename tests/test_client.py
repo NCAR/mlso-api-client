@@ -15,7 +15,7 @@ def test_about(base_url: str, api_version: str, username: str):
         assert f in about_response
 
 
-def test_instruments(base_url, api_version, username):
+def test_instruments(base_url: str, api_version: str, username: str):
     instruments = ["kcor", "ucomp"]
     instruments_response = client.instruments(
         base_url=base_url, api_version=api_version
@@ -24,56 +24,72 @@ def test_instruments(base_url, api_version, username):
     assert set(instruments) == set([i["id"] for i in instruments_response])
 
 
-def test_instrument_info():
-    assert False
+def test_instrument_info(base_url: str, api_version: str, username: str):
+    instruments = ["kcor", "ucomp"]
+    fields = ["dates", "doi", "landing-page", "name"]
+    for i in instruments:
+        info = client.instrument_info(i, base_url=base_url, api_version=api_version)
+        assert set(fields) == set(info.keys())
+
+
+UCOMP_STANDARD_PRODUCTS = ["mean", "median", "l2", "l2average", "density", "all"]
 
 
 def test_ucomp_products(base_url: str, api_version: str, username: str):
-    ucomp_standard_products = ["mean", "median", "l2", "l2average", "density", "all"]
     ucomp_products_response = client.products(
         "ucomp", base_url=base_url, api_version=api_version
     )
     ucomp_products = ucomp_products_response["products"]
-    assert len(ucomp_products) == len(ucomp_standard_products)
+    assert len(ucomp_products) == len(UCOMP_STANDARD_PRODUCTS)
     for p in ucomp_products:
         assert "id" in p
         assert "name" in p
         assert "description" in p
 
-    assert set(ucomp_standard_products) == set([p["id"] for p in ucomp_products])
+    assert set(UCOMP_STANDARD_PRODUCTS) == set([p["id"] for p in ucomp_products])
+
+
+KCOR_STANDARD_PRODUCTS = [
+    "pb",
+    "nrgf",
+    "pbavg",
+    "nrgfavg",
+    "pbextavg",
+    "nrgfextavg",
+    "pbavgenh",
+    "pbextavgenh",
+    "nrgfavgenh",
+    "nrgfextavgenh",
+    "pbdiff",
+    "nrgf+diff",
+    "all",
+]
 
 
 def test_kcor_products(base_url: str, api_version: str, username: str):
-    kcor_standard_products = [
-        "pb",
-        "nrgf",
-        "pbavg",
-        "nrgfavg",
-        "pbextavg",
-        "nrgfextavg",
-        "pbavgenh",
-        "pbextavgenh",
-        "nrgfavgenh",
-        "nrgfextavgenh",
-        "pbdiff",
-        "nrgf+diff",
-        "all",
-    ]
     kcor_products_response = client.products(
         "kcor", base_url=base_url, api_version=api_version
     )
     kcor_products = kcor_products_response["products"]
-    assert len(kcor_products) == len(kcor_standard_products)  # 11 KCor products + "all"
+    assert len(kcor_products) == len(KCOR_STANDARD_PRODUCTS)  # 11 KCor products + "all"
     for p in kcor_products:
         assert "id" in p
         assert "name" in p
         assert "description" in p
 
-    assert set(kcor_standard_products) == set([p["id"] for p in kcor_products])
+    assert set(KCOR_STANDARD_PRODUCTS) == set([p["id"] for p in kcor_products])
 
 
 def test_product_info(base_url: str, api_version: str, username: str):
-    assert False
+    instruments = ["kcor", "ucomp"]
+    products = {"kcor": KCOR_STANDARD_PRODUCTS, "ucomp": UCOMP_STANDARD_PRODUCTS}
+    fields = {"description", "filters", "formats", "id", "name", "title"}
+    for i in instruments:
+        for p in products[i]:
+            product_info = client.product_info(
+                i, p, base_url=base_url, api_version=api_version
+            )
+            assert set(fields) == set(product_info.keys())
 
 
 def test_files(base_url: str, api_version: str, username: str):
@@ -107,7 +123,10 @@ def test_download_file(base_url: str, api_version: str, username: str):
 
 
 def test_datasets(base_url: str, api_version: str, username: str):
-    assert False
+    datasets = ["events"]
+    datasets_response = client.datasets(base_url=base_url, api_version=api_version)
+    assert type(datasets_response) == list
+    assert set(datasets) == set([i["id"] for i in datasets_response])
 
 
 def test_events_products(base_url: str, api_version: str, username: str):
