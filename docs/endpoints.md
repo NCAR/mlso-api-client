@@ -268,6 +268,29 @@ Cookie: session=FrFClgPOPeNZVR-r44Yn5jVTILVZ-2cfWRh5ilsLbRQ
 ```
 
 ### `HTTP GET /datasets`
+
+Use this to list the available datasets. The result will be a JSON list of
+string identifiers for the available instruments. For example, the current JSON
+response for
+
+```
+http://api.mlso.ucar.edu/v1/datasets
+```
+
+is:
+
+``` console
+$ curl -s "http://api.mlso.ucar.edu/v1/datasets" | python -m json.tool
+[
+    "events",
+]
+```
+
+The names listed are the "dataset IDs" that are used in other endpoints to
+identify instruments. Data from more datasets will be made available in the
+future. In the MLSO API, datasets contain products which contain data.
+
+
 ### `HTTP GET /datasets/<dataset-id>`
 ### `HTTP GET /datasets/<dataset-id>/products`
 ### `HTTP GET /datasets/<dataset-id>/products/<product-id>`
