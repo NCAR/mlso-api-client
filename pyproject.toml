@@ -30,7 +30,7 @@ classifiers = [
 keywords = ["webservice", "Mauna Loa Solar Observatory", "MLSO", "solar"]
 dependencies = [
   "requests",
-  "tqdm"
+  "rich"
 ]
 
 [project.urls]
