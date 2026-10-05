@@ -73,9 +73,10 @@ is:
 $ curl -sL "http://api.mlso.ucar.edu/v1/instruments/kcor" | python -m json.tool
 {
     "dates": {
-        "end-date": "2025-03-24T21:04:20",
+        "end-date": "2026-10-03T23:39:55",
         "start-date": "2013-09-30T18:57:54"
     },
+    "description": "The COronal Solar Magnetism Observatory (COSMO) K-coronagraph (K-Cor) is one of three proposed instruments in the COSMO facility suite. It is specifically designed to study the formation and dynamics of coronal mass ejections and the evolution of the density structure of the low corona. The K-Cor records the polarization brightness (pB) formed by Thomson scattering of photospheric light by coronal free electrons. The National Center for Atmospheric Research (NCAR), via the National Science Foundation (NSF), provided full funding for the COSMO K-Cor, which was deployed to the Mauna Loa Solar Observatory (MLSO) in Hawaii in September 2013, replacing the aging MLSO Mk4 K-coronameter.\nThe COSMO K-Coronagraph design was driven by the science goals of understanding the formation of CMEs and the structure and evolution of the low corona. Basic features of the K-Cor design include: internally occulted refractive coronagraph, field-of-view (FOV): 1.05 to 3 solar radii, aperture: 20 cm uncoated singlet objective lens, focal Length: 2 m (f/10), pass band: ~720 to 750 nm, out-of-band rejection, Lyot Stop, 4-state polarization modulation, dual beam polarization (2 cameras to simultaneously record polarization states), 5.5 arcsec pixels, and\nnominal cadence: 15 seconds (can run faster in campaign mode",
     "doi": "https://doi.org/10.5065/D69G5JV8",
     "landing-page": "https://www2.hao.ucar.edu/mlso/instruments/cosmo-k-coronagraph-k-cor",
     "name": "COSMO K-Coronagraph (KCor)"
@@ -378,6 +379,7 @@ $ curl -sL "http://api.mlso.ucar.edu/v1/datasets/events" | python -m json.tool
         "end-date": "2026-10-02T00:00:00",
         "start-date": "2002-02-27T00:00:00"
     },
+    "description": "The events dataset lists the CME, flares, promince eruptions, filament eruptions, and other significant activity in MLSO observations. Events are found by automated process, observers, and later analysis, but validated and adjusted by human analysts.",
     "doi": "",
     "landing-page": "https://mlso.hao.ucar.edu/mlso_solar_activity.php",
     "name": "MLSO events"
