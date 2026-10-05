@@ -836,10 +836,10 @@ def _info(args):
 
 
 def _download_files(
+    filelist: list[dict],
+    format_name: str,
     base_url: str,
     api_version: str,
-    format_name: str,
-    filelist: list[dict],
     output_dir: Path,
     username: str,
     verbose: bool = False,
@@ -978,10 +978,10 @@ def _files(args: argparse.Namespace):
     filelist = files_response["files"]
     if args.download:
         _download_files(
+            filelist,
+            args.format,
             base_url,
             args.api_version,
-            args.format,
-            filelist,
             Path(args.output_dir),
             args.username,
             verbose=args.verbose,
