@@ -24,7 +24,7 @@ http://api.mlso.ucar.edu/v1
 Basic information about the server can be found from the `about` endpoint:
 
 ``` console
-$ curl -s "http://api.mlso.ucar.edu/v1/about" | python -m json.tool
+$ curl -sL "http://api.mlso.ucar.edu/v1/about" | python -m json.tool
 {
   "documentation": "https://mlso-api-client.readthedocs.io/en/latest/",
   "homepage": "https://www2.hao.ucar.edu/mlso",
@@ -47,7 +47,7 @@ http://api.mlso.ucar.edu/v1/instruments
 is:
 
 ``` console
-$ curl -s "http://api.mlso.ucar.edu/v1/instruments" | python -m json.tool
+$ curl -sL "http://api.mlso.ucar.edu/v1/instruments" | python -m json.tool
 [
     "ucomp",
     "kcor"
@@ -99,18 +99,84 @@ is:
 $ curl -sL "http://api.mlso.ucar.edu/v1/instruments/kcor/products" | python -m json.tool
 {
     "products": [
-        {"description": "polarized brightness image", "id": "pb", "title": "pB"},
-        {"description": "Normalized Radially Graded Filtered image", "id": "nrgf", "title": "NRGF"},
-        {"description": "NRGF average image", "id": "nrgfavg", "title": "NRGF avg"},
-        {"description": "pB average image", "id": "pbavg", "title": "pB avg"},
-        {"description": "daily pB average image", "id": "pbextavg", "title": "pB ext avg"},
-        {"description": "NRGF extended average image", "id": "nrgfextavg", "title": "NRGF ext avg"},
-        {"description": "enhanced average image", "id": "pbavgenh", "title": "pB avg enh"},
-        {"description": "enhanced extended average image", "id": "pbextavgenh", "title": "pB ext avg enh"},
-        {"description": "NRGF enhanced average image", "id": "nrgfavgenh", "title": "NRGF avg enh"},
-        {"description": "NRGF enhanced extended average image", "id": "nrgfextavgenh", "title": "NRGF ext avg enh"},
-        {"description": "pB difference image", "id": "pbdiff", "title": "pB diff"},
-        {"description": "all products", "id": "all", "title": "All"}
+        {
+            "description": "polarized brightness image",
+            "id": "pb",
+            "name": "pB",
+            "title": "pB"
+        },
+        {
+            "description": "Normalized Radially Graded Filtered image",
+            "id": "nrgf",
+            "name": "NRGF",
+            "title": "NRGF"
+        },
+        {
+            "description": "NRGF average image",
+            "id": "nrgfavg",
+            "name": "NRGF avg",
+            "title": "NRGF avg"
+        },
+        {
+            "description": "pB average image",
+            "id": "pbavg",
+            "name": "pB avg",
+            "title": "pB avg"
+        },
+        {
+            "description": "daily pB average image",
+            "id": "pbextavg",
+            "name": "pB ext avg",
+            "title": "pB ext avg"
+        },
+        {
+            "description": "NRGF extended average image",
+            "id": "nrgfextavg",
+            "name": "NRGF ext avg",
+            "title": "NRGF ext avg"
+        },
+        {
+            "description": "enhanced average image",
+            "id": "pbavgenh",
+            "name": "pB avg enh",
+            "title": "pB avg enh"
+        },
+        {
+            "description": "enhanced extended average image",
+            "id": "pbextavgenh",
+            "name": "pB ext avg enh",
+            "title": "pB ext avg enh"
+        },
+        {
+            "description": "NRGF enhanced average image",
+            "id": "nrgfavgenh",
+            "name": "NRGF avg enh",
+            "title": "NRGF avg enh"
+        },
+        {
+            "description": "NRGF enhanced extended average image",
+            "id": "nrgfextavgenh",
+            "name": "NRGF ext avg enh",
+            "title": "NRGF ext avg enh"
+        },
+        {
+            "description": "pB difference image",
+            "id": "pbdiff",
+            "name": "pB diff",
+            "title": "pB diff"
+        },
+        {
+            "description": "NRGF and difference image",
+            "id": "nrgf+diff",
+            "name": "NRGF + pB diff",
+            "title": "NRGF + pB diff"
+        },
+        {
+            "description": "all products",
+            "id": "all",
+            "name": "All",
+            "title": "All"
+        }
     ]
 }
 ```
@@ -136,12 +202,15 @@ $ curl -sL "http://api.mlso.ucar.edu/v1/instruments/kcor/products/pb" | python -
         "start-date",
         "end-date",
         "cr",
-        "every"
+        "every",
+        "event"
     ],
     "formats": [
-        "fits"
+        "fits",
+        "quicklook"
     ],
     "id": "pb",
+    "name": "pB",
     "title": "pB"
 }
 ```
@@ -270,7 +339,7 @@ Cookie: session=FrFClgPOPeNZVR-r44Yn5jVTILVZ-2cfWRh5ilsLbRQ
 ### `HTTP GET /datasets`
 
 Use this to list the available datasets. The result will be a JSON list of
-string identifiers for the available instruments. For example, the current JSON
+string identifiers for the available datasets. For example, the current JSON
 response for
 
 ```
@@ -280,21 +349,30 @@ http://api.mlso.ucar.edu/v1/datasets
 is:
 
 ``` console
-$ curl -s "http://api.mlso.ucar.edu/v1/datasets" | python -m json.tool
+$ curl -sL "http://api.mlso.ucar.edu/v1/datasets" | python -m json.tool
 [
     "events"
 ]
 ```
 
 The names listed are the "dataset IDs" that are used in other endpoints to
-identify instruments. Data from more datasets will be made available in the
+identify datasets. Data from more datasets will be made available in the
 future. In the MLSO API, datasets contain products which contain data.
 
 
 ### `HTTP GET /datasets/<dataset-id>`
 
+This endpoint provides more information about the dataset corresponding to
+`dataset-id`. For example, the JSON response for
+
+```
+http://api.mlso.ucar.edu/v1/datasets/events
+```
+
+is:
+
 ``` console
-$ curl -s "http://api.mlso.ucar.edu/v1/datasets/events" | python -m json.tool
+$ curl -sL "http://api.mlso.ucar.edu/v1/datasets/events" | python -m json.tool
 {
     "dates": {
         "end-date": "2026-10-02T00:00:00",
@@ -308,8 +386,17 @@ $ curl -s "http://api.mlso.ucar.edu/v1/datasets/events" | python -m json.tool
 
 ### `HTTP GET /datasets/<dataset-id>/products`
 
+This endpoint returns the products of the dataset corresponding to
+`dataset-id`. For example, the JSON response for
+
+```
+http://api.mlso.ucar.edu/v1/datasets/events/products
+```
+
+is:
+
 ``` console
-$ curl -s "http://api.mlso.ucar.edu/v1/datasets/events/products" | python -m json.tool
+$ curl -sL "http://api.mlso.ucar.edu/v1/datasets/events/products" | python -m json.tool
 {
     "products": [
         {
@@ -348,8 +435,18 @@ $ curl -s "http://api.mlso.ucar.edu/v1/datasets/events/products" | python -m jso
 
 ### `HTTP GET /datasets/<dataset-id>/products/<product-id>`
 
+This endpoint returns metadata for the product type corresponding to
+`product-id` of the dataset corresponding to `dataset-id`. For example,
+the JSON response for
+
+```
+http://api.mlso.ucar.edu/v1/datasets/events/products/cme
+```
+
+is:
+
 ``` console
-$ curl -s "http://api.mlso.ucar.edu/v1/datasets/events/products/cme" | python -m json.tool
+$ curl -sL "http://api.mlso.ucar.edu/v1/datasets/events/products/cme" | python -m json.tool
 {
     "description": "coronal mass ejections (CMEs)",
     "filters": [
@@ -367,8 +464,18 @@ $ curl -s "http://api.mlso.ucar.edu/v1/datasets/events/products/cme" | python -m
 
 ### `HTTP GET /datasets/<dataset-id>/products/<product-id>/data`
 
+This endpoint returns data for the dataset corresponding to `dataset-id`
+and of the product type corresponding to `product-id`. For example, the JSON
+response for
+
+```
+http://api.mlso.ucar.edu/v1/datasets/events/products/cme/data?start-date=2026-04-01&end-date=2026-04-03
+```
+
+is:
+
 ``` console
-$ curl -s "http://api.mlso.ucar.edu/v1/datasets/events/products/cme/data?start-date=2026-04-01&end-date=2026-04-03" | python -m json.tool
+$ curl -sL "http://api.mlso.ucar.edu/v1/datasets/events/products/cme/data?start-date=2026-04-01&end-date=2026-04-03" | python -m json.tool
 {
     "dataset": "events",
     "end-date": "2026-04-03",
@@ -386,3 +493,18 @@ $ curl -s "http://api.mlso.ucar.edu/v1/datasets/events/products/cme/data?start-d
     "type": "cme"
 }
 ```
+
+The URL parameters available to filter the files are given in the table below.
+
+| Parameter | Description |
+| --------- | ----------- |
+| `start‑date` | Return only data after the "start-date". |
+| `end‑date` | Return only data before the "end-date". |
+| `instrument` | Return only date seen in `<instrument-id>`. |
+
+The valid date formats are: "%Y-%m-%dT%H:%M:%S" or "%Y-%m-%d", e.g.,
+"2025-01-01T10:30:00" or "2025-01-01". All date/times are in UT.
+
+Unlike the `/instruments/<instrument-id>/products/<product-id>/files` endpoint,
+you do not have to download a separate file to get the data nor do you need to
+call the `/authenticate` endpoint.
