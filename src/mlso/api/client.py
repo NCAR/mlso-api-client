@@ -54,7 +54,7 @@ import sys
 import textwrap
 
 import requests
-import tqdm
+from rich.progress import track
 
 from . import __version__
 
@@ -869,8 +869,8 @@ def _download_files(
         iterable_files = filelist
         message = print
     else:
-        iterable_files = tqdm.tqdm(filelist)
-        message = tqdm.tqdm.write
+        iterable_files = track(filelist, description="Downloading files...")
+        message = print
 
     n_failed = 0
     for f in iterable_files:
