@@ -370,13 +370,15 @@ def product_info(
     product: str,
     /,
     *,
+    dataset: bool = False,
     base_url: str = BASE_URL,
     api_version: str = API_VERSION,
     verbose: bool = False,
 ) -> dict:
     """Return info about the data of a given product of instrument available
     through the API."""
-    url = f"{base_url}/{api_version}/instruments/{instrument}/products/{product}"
+    type_name = "datasets" if dataset else "instruments"
+    url = f"{base_url}/{api_version}/{type_name}/{instrument}/products/{product}"
     if verbose:
         logger.debug(f"URL: {url}")
 
@@ -615,6 +617,32 @@ def data(
     return j
 
 
+def dataset_info(
+    dataset: str,
+    /,
+    *,
+    base_url: str = BASE_URL,
+    api_version: str = API_VERSION,
+    verbose: bool = False,
+) -> dict:
+    """Return info about an dataset's data available through the API."""
+    url = f"{base_url}/{api_version}/datasets/{dataset}/"
+    if verbose:
+        logger.debug(f"URL: {url}")
+
+    try:
+        r = requests.get(url)
+    except requests.exceptions.ConnectionError as e:
+        raise ServerError(f"Connection error reaching {url}")
+
+    j = r.json()
+
+    if verbose:
+        logger.debug(pformat(j))
+
+    return j
+
+
 # Command line interface sub-command handlers
 
 
@@ -741,12 +769,15 @@ def _info(args):
     """Handle printing the ``/instruments/{instrument}/products/{product}``
     endpoint results for the command line interface.
     """
+    n_columns = os.get_terminal_size().columns
+
     base_url = LOCAL_BASE_URL if args.local else args.base_url
     try:
         if args.product is not None:
             info = product_info(
-                args.instrument,
+                args.instrument if args.instrument is not None else args.dataset,
                 args.product,
+                dataset=args.dataset is not None,
                 base_url=base_url,
                 api_version=args.api_version,
                 verbose=args.verbose,
@@ -758,18 +789,46 @@ def _info(args):
             print(f"{'Filters':{key_width}s} : {', '.join(info['filters'])}")
             print(f"{'Formats':{key_width}s} : {', '.join(info['formats'])}")
         else:
-            info = instrument_info(
-                args.instrument,
-                base_url=base_url,
-                api_version=args.api_version,
-                verbose=args.verbose,
-            )
+            if args.instrument is not None:
+                info = instrument_info(
+                    args.instrument,
+                    base_url=base_url,
+                    api_version=args.api_version,
+                    verbose=args.verbose,
+                )
+            else:
+                info = dataset_info(
+                    args.dataset,
+                    base_url=base_url,
+                    api_version=args.api_version,
+                    verbose=args.verbose,
+                )
             key_width = 12
+            value_width = n_columns - key_width - 3
+
+            indent = (key_width + 3) * " "
+            description = "\n\n".join(
+                [
+                    "\n".join(
+                        textwrap.wrap(
+                            p,
+                            width=n_columns,
+                            initial_indent=f"{'Description':{key_width}s} : "
+                            if i == 0
+                            else indent,
+                            subsequent_indent=indent,
+                        )
+                    )
+                    for i, p in enumerate(info["description"].splitlines())
+                ]
+            )
+
             print(f"{'Name':{key_width}s} : {info['name']}")
             print(f"{'DOI':{key_width}s} : {info['doi']}")
             print(f"{'Landing page':{key_width}s} : {info['landing-page']}")
             print(f"{'Start date':{key_width}s} : {info['dates']['start-date']}")
             print(f"{'End date':{key_width}s} : {info['dates']['end-date']}")
+            print(description)
     except ServerError as e:
         print(e)
         return
@@ -876,7 +935,7 @@ def _files(args: argparse.Namespace):
             args.instrument,
             args.product,
             filters,
-            base_url=args.base_url,
+            base_url=base_url,
             api_version=args.api_version,
             verbose=args.verbose,
             client="cli",
@@ -931,7 +990,7 @@ def _files(args: argparse.Namespace):
         product_sep = "-" * max_productname_width
         if len(filelist) > 0:
             if args.verbose:
-                logger.debug()
+                logger.debug("")
             print(
                 f"{'Date/time':{datetime_width}s} {'Instrument':{instrument_width}s} {'Product':{max_productname_width}s} {'Filesize':{filesize_width}s} {'Filename':{max_filename_width}s}"
             )
@@ -1198,6 +1257,7 @@ def main():
         "info", help="More detailed information about an instrument or product"
     )
     info_parser.add_argument("-i", "--instrument", help="instrument", default=None)
+    info_parser.add_argument("-d", "--dataset", help="dataset", default=None)
     info_parser.add_argument("-p", "--product", help="product", default=None)
     info_parser.set_defaults(func=_info, parser=info_parser)
 
