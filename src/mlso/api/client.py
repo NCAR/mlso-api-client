@@ -644,7 +644,7 @@ def data(
     return j
 
 
-# Command line interface sub-command handlers
+# Command line interface subcommand handlers
 
 
 def _about(args: argparse.Namespace):
@@ -1194,7 +1194,7 @@ def main():
 
     parser.add_argument("-v", "--version", action="version", version=name)
 
-    # show help if no sub-command given
+    # show help if no subcommand given
     parser.set_defaults(func=_print_help, parser=parser)
 
     parser.add_argument(
@@ -1368,10 +1368,10 @@ def main():
     data_parser.add_argument("-i", "--instrument", help="instrument", default=None)
     data_parser.set_defaults(func=_data, parser=data_parser)
 
-    # parse args and call appropriate sub-command
+    # parse args and call appropriate subcommand
     args = parser.parse_args()
 
-    # don't print "about" info, if the sub-command is "about" since it would be
+    # don't print "about" info, if the subcommand is "about" since it would be
     # printed twice in that case
     if args.verbose and args.func != _about:
         _about(args)
