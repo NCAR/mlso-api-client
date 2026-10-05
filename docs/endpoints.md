@@ -282,7 +282,7 @@ is:
 ``` console
 $ curl -s "http://api.mlso.ucar.edu/v1/datasets" | python -m json.tool
 [
-    "events",
+    "events"
 ]
 ```
 
@@ -292,6 +292,97 @@ future. In the MLSO API, datasets contain products which contain data.
 
 
 ### `HTTP GET /datasets/<dataset-id>`
+
+``` console
+$ curl -s "http://api.mlso.ucar.edu/v1/datasets/events" | python -m json.tool
+{
+    "dates": {
+        "end-date": "2026-10-02T00:00:00",
+        "start-date": "2002-02-27T00:00:00"
+    },
+    "doi": "",
+    "landing-page": "https://mlso.hao.ucar.edu/mlso_solar_activity.php",
+    "name": "MLSO events"
+}
+```
+
 ### `HTTP GET /datasets/<dataset-id>/products`
+
+``` console
+$ curl -s "http://api.mlso.ucar.edu/v1/datasets/events/products" | python -m json.tool
+{
+    "products": [
+        {
+            "description": "coronal cavity",
+            "id": "cavity",
+            "name": "Coronal cavity"
+        },
+        {
+            "description": "coronal mass ejections (CMEs)",
+            "id": "cme",
+            "name": "CME"
+        },
+        {
+            "description": "jet",
+            "id": "jet",
+            "name": "Jet"
+        },
+        {
+            "description": "coronal loop",
+            "id": "loop",
+            "name": "Loop"
+        },
+        {
+            "description": "surge",
+            "id": "surge",
+            "name": "Surge"
+        },
+        {
+            "description": "all event types",
+            "id": "all",
+            "name": "All"
+        }
+    ]
+}
+```
+
 ### `HTTP GET /datasets/<dataset-id>/products/<product-id>`
+
+``` console
+$ curl -s "http://api.mlso.ucar.edu/v1/datasets/events/products/cme" | python -m json.tool
+{
+    "description": "coronal mass ejections (CMEs)",
+    "filters": [
+        "start-date",
+        "end-date",
+        "instrument"
+    ],
+    "formats": [
+        "JSON"
+    ],
+    "id": "cme",
+    "name": "CME"
+}
+```
+
 ### `HTTP GET /datasets/<dataset-id>/products/<product-id>/data`
+
+``` console
+$ curl -s "http://api.mlso.ucar.edu/v1/datasets/events/products/cme/data?start-date=2026-04-01&end-date=2026-04-03" | python -m json.tool
+{
+    "dataset": "events",
+    "end-date": "2026-04-03",
+    "events": [
+        {
+            "comment": "A  wide, bulb CME with a bright core between PA 295-05.",
+            "date-end": "2026-04-02T00:17:00",
+            "date-obs": "2026-04-01T22:36:00",
+            "instrument": "kcor",
+            "quadrant": "N-NW limb",
+            "type": "cme"
+        }
+    ],
+    "start-date": "2026-04-01",
+    "type": "cme"
+}
+```
