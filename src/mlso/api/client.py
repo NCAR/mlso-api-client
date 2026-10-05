@@ -217,6 +217,32 @@ def instruments(
     return results
 
 
+def instrument_info(
+    instrument: str,
+    /,
+    *,
+    base_url: str = BASE_URL,
+    api_version: str = API_VERSION,
+    verbose: bool = False,
+) -> dict:
+    """Return info about an instrument's data available through the API."""
+    url = f"{base_url}/{api_version}/instruments/{instrument}/"
+    if verbose:
+        logger.debug(f"URL: {url}")
+
+    try:
+        r = requests.get(url)
+    except requests.exceptions.ConnectionError as e:
+        raise ServerError(f"Connection error reaching {url}")
+
+    j = r.json()
+
+    if verbose:
+        logger.debug(pformat(j))
+
+    return j
+
+
 def datasets(
     base_url: str = BASE_URL,
     api_version: str = API_VERSION,
@@ -273,16 +299,17 @@ def datasets(
     return results
 
 
-def instrument_info(
-    instrument: str,
+def dataset_info(
+    dataset: str,
     /,
     *,
     base_url: str = BASE_URL,
     api_version: str = API_VERSION,
     verbose: bool = False,
 ) -> dict:
-    """Return info about an instrument's data available through the API."""
-    url = f"{base_url}/{api_version}/instruments/{instrument}/"
+    """Returns info about an dataset's data available through the API, i.e., the
+    ``/datasets/<dataset-id>/`` endpoint."""
+    url = f"{base_url}/{api_version}/datasets/{dataset}/"
     if verbose:
         logger.debug(f"URL: {url}")
 
@@ -611,32 +638,6 @@ def data(
         raise ServerError(f"Server response: {r.status_code} {r.reason} ({msg})")
 
     j = r.json()
-    if verbose:
-        logger.debug(pformat(j))
-
-    return j
-
-
-def dataset_info(
-    dataset: str,
-    /,
-    *,
-    base_url: str = BASE_URL,
-    api_version: str = API_VERSION,
-    verbose: bool = False,
-) -> dict:
-    """Return info about an dataset's data available through the API."""
-    url = f"{base_url}/{api_version}/datasets/{dataset}/"
-    if verbose:
-        logger.debug(f"URL: {url}")
-
-    try:
-        r = requests.get(url)
-    except requests.exceptions.ConnectionError as e:
-        raise ServerError(f"Connection error reaching {url}")
-
-    j = r.json()
-
     if verbose:
         logger.debug(pformat(j))
 
