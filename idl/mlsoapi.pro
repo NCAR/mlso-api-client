@@ -43,6 +43,48 @@ end
 
 
 ;+
+; Print table of the available datasets.
+;
+; :Params:
+;   url_object : in, required, type=IDLnetURL object
+;     `IDLnetURL` to make requests of
+;
+; :Keywords:
+;   base_url : in, optional, type=string
+;     base URL for the MLSO API server
+;   api_version : in, optional, type=string, default="v1"
+;     version of the API to use
+;-
+pro mlsoapi_datasets, url_object, base_url=base_url, api_version=api_version
+  compile_opt strictarr
+
+  datasets_info = mlso_datasets(base_url=base_url, $
+                                api_version=api_version, $
+                                url_object=url_object, $
+                                n_datasets=n_datasets)
+
+  if (n_datasets gt 0L) then begin
+    fmt = '%-8s %-44s %s'
+    print, 'ID', 'Dataset name', 'Dates available', format=fmt
+    hyphen = (byte('-'))[0]
+    print, string(bytarr(8) + hyphen), $
+           string(bytarr(44) + hyphen), $
+           string(bytarr(23) + hyphen), $
+           format=fmt
+  endif
+
+  for i = 0L, n_elements(datasets_info) - 1L do begin
+    dataset = datasets_info[i]
+    print, dataset.id, $
+           dataset.name, $
+           strmid(dataset.start_date, 0, 10), $
+           strmid(dataset.end_date, 0, 10), $
+           format='%-8s %-44s %s...%s'
+  endfor
+end
+
+
+;+
 ; Print table of the available products for an instrument.
 ;
 ; :Params:
@@ -67,14 +109,14 @@ pro mlsoapi_products, url_object, instrument, base_url=base_url, api_version=api
   products = products_info.products
 
   fmt = '%-13s %-22s %s'
-  print, 'ID', 'Title', 'Description', format=fmt
+  print, 'ID', 'Name', 'Description', format=fmt
   hyphen = (byte('-'))[0]
   print, string(bytarr(13) + hyphen), $
          string(bytarr(22) + hyphen), $
          string(bytarr(55) + hyphen), format=fmt
   for p = 0L, n_products - 1L do begin
     product = products[p]
-    print, product.id, product.title, product.description, format=fmt
+    print, product.id, product.name, product.description, format=fmt
   endfor
 end
 
@@ -274,6 +316,8 @@ end
 ;     location to place downloaded files, creates if it doesn't already exist
 ;   username : in, optional, type=string
 ;     username registered with HAO website, required if `/DOWNLOAD` set
+;   local : in, optional, type=boolean
+;     set to use localhost (http://127.0.0.1:5000) as the server URL
 ;   base_url : in, required, type=string, default="http://api.mlso.ucar.edu"
 ;     base URL for the MLSO API server
 ;   api_version : in, optional, type=string, default="v1"
@@ -290,12 +334,15 @@ pro mlsoapi, instrument=instrument, $
              download=download, $
              output_dir=output_dir, $
              username=username, $
+             local=local, $
              base_url=base_url, $
              api_version=api_version, $
              verbose=verbose
   compile_opt strictarr
 
-  _base_url = n_elements(base_url) gt 0 ? base_url : 'http://api.mlso.ucar.edu'
+  _base_url = n_elements(base_url) gt 0 $
+    ? base_url $
+    : (keyword_set(local) ? 'http://127.0.0.1:5000' : 'http://api.mlso.ucar.edu')
   _api_version = n_elements(api_version) gt 0L ? api_version : 'v1'
 
   url_object = IDLnetURL()
@@ -303,6 +350,8 @@ pro mlsoapi, instrument=instrument, $
   case 1 of
     (n_elements(instrument) eq 0L) && (n_elements(product) eq 0L): begin
         mlsoapi_instruments, url_object, base_url=_base_url, api_version=_api_version
+        print
+        mlsoapi_datasets, url_object, base_url=_base_url, api_version=_api_version
       end
     (n_elements(instrument) gt 0L) && (n_elements(product) eq 0L): begin
         mlsoapi_products, url_object, instrument, base_url=_base_url, api_version=_api_version
