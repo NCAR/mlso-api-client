@@ -672,7 +672,7 @@ To retrieve information about the products and files available for UCoMP:
       DESCRIPTION     STRING    'IQUV and backgrounds for various wavelengths'
       ID              STRING    'l1'
       TITLE           STRING    'Level 1'
-    IDL> files_info = mlso_files('ucomp', 'l2', wave_region='789', start_date='2025-03-23')
+    IDL> files_info = mlso_files('ucomp', 'l2', wave_region='789', start_date='2025-03-23', end_date='2025-03-25')
     IDL> files = files_info.files
     IDL> n_files = n_elements(files)
     IDL> .run
