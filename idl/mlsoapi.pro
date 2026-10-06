@@ -218,6 +218,144 @@ end
 
 
 ;+
+; Print table of the available event data for a given product. Events are
+; filtered by keywords such as `start_date`, `end_date`, or `instrument` seen
+; in.
+;
+; :Params:
+;   url_object : in, required, type=IDLnetURL object
+;     `IDLnetURL` to make requests of
+;   product : in, required, type=string
+;     product ID to list the files of
+;
+; :Keywords:
+;   wave_region : in, optional, type=string
+;     wave region of files to return
+;   start_date : in, optional, type=string
+;     start date to begin looking for files from
+;   end_date : in, optional, type=string
+;     end date to end looking for files to
+;   instrument : in, optional, type=string
+;     filter datasets by instrument observed in
+;   base_url : in, required, type=string
+;     base URL for the MLSO API server
+;   api_version : in, optional, type=string, default="v1"
+;     version of the API to use
+;-
+pro mlsoapi_events, url_object, product, $
+                    start_date=start_date, $
+                    end_date=end_date, $
+                    instrument=instrument, $
+                    base_url=base_url, $
+                    api_version=api_version
+  compile_opt strictarr
+
+  events_info = mlso_data("events", product, $
+                          n_data=n_data, $
+                          start_date=start_date, $
+                          end_date=end_date, $
+                          instrument=instrument, $
+                          base_url=base_url, $
+                          url_object=url_object)
+  events = events_info.events
+
+  date_width = 19
+  instrument_width = 10
+  max_eventtype_width = 7
+  quadrant_width = 10
+  n_columns = 100L
+  comment_width = n_columns - date_width - 1 - date_width - 1 $
+    - instrument_width - 1 - max_eventtype_width - 1 - quadrant_width - 1
+  fmt = string(date_width, $
+               date_width, $
+               instrument_width, $
+               max_eventtype_width, $
+               quadrant_width, $
+               comment_width, $
+               format='%%-%ds %%-%ds %%-%ds %%-%ds %%-%ds %%-%ds')
+
+  print, 'Start time', 'End time', 'Instrument', 'Type', 'Quadrant', 'Comment', $
+         format=fmt
+  hyphen = (byte('-'))[0]
+  print, string(bytarr(date_width) + hyphen), $
+         string(bytarr(date_width) + hyphen), $
+         string(bytarr(instrument_width) + hyphen), $
+         string(bytarr(max_eventtype_width) + hyphen), $
+         string(bytarr(quadrant_width) + hyphen), $
+         string(bytarr(comment_width) + hyphen), $
+         format='%s %s %s %s %s %s'
+
+  for e = 0L, n_elements(events) - 1L do begin
+    ev = events[e]
+    comments = mg_strwrap(ev.comment, width=comment_width)
+    print, ev.date_obs, ev.date_end, ev.instrument, ev.type, ev.quadrant, comments[0], $
+           format=fmt
+    for c = 1L, n_elements(comments) - 1L do begin
+    print, '', '', '', '', '', comments[c], $
+           format=fmt
+    endfor
+  endfor
+
+  print, string(bytarr(date_width) + hyphen), $
+         string(bytarr(date_width) + hyphen), $
+         string(bytarr(instrument_width) + hyphen), $
+         string(bytarr(max_eventtype_width) + hyphen), $
+         string(bytarr(quadrant_width) + hyphen), $
+         string(bytarr(comment_width) + hyphen), $
+         format='%s %s %s %s %s %s'
+  n_events = string(n_elements(events), format='%d events')
+  print, n_events, $
+         format='%-45s'
+end
+
+
+;+
+; Print table of the available data for a given dataset and product. Data is
+; filtered by keywords such as `start_date`, `end_date`, or `instrument` seen
+; in.
+;
+; :Params:
+;   url_object : in, required, type=IDLnetURL object
+;     `IDLnetURL` to make requests of
+;   dataset : in, required, type=string
+;     dataset ID to list the files of
+;   product : in, required, type=string
+;     product ID to list the files of
+;
+; :Keywords:
+;   wave_region : in, optional, type=string
+;     wave region of files to return
+;   start_date : in, optional, type=string
+;     start date to begin looking for files from
+;   end_date : in, optional, type=string
+;     end date to end looking for files to
+;   instrument : in, optional, type=string
+;     filter datasets by instrument observed in
+;   base_url : in, required, type=string
+;     base URL for the MLSO API server
+;   api_version : in, optional, type=string, default="v1"
+;     version of the API to use
+;-
+pro mlsoapi_data, url_object, dataset, product, $
+                  start_date=start_date, $
+                  end_date=end_date, $
+                  instrument=instrument, $
+                  base_url=base_url, $
+                  api_version=api_version
+  compile_opt strictarr
+
+  if (dataset eq "events") then begin
+    mlsoapi_events, url_object, product, $
+                    start_date=start_date, $
+                    end_date=end_date, $
+                    instrument=instrument, $
+                    base_url=base_url, $
+                    api_version=api_version
+  endif
+end
+
+
+;+
 ; Download available files for a given instrument and product. Files are
 ; filtered by keywords such as `wave_region`, `start_date`, and `end_date`.
 ;
@@ -317,8 +455,11 @@ end
 ;     time period to select 1 file from, e.g., "15minute" returns 1 file every
 ;     15 minutes; units are second, minute, hour, day, week, month, quarter,
 ;     year
-;   event : in, optional, type=string
-;     event type to download files during, currently only "cme"
+;   event : in, optional, type=string, default="all"
+;     event type to download files during, currently only "cavity", "cme",
+;     "jet", "loop", "surge", or "all"
+;   filter_instrument : in, optional, type=string
+;     filter datasets by instrument observed in
 ;   download : in, optional, type=boolean
 ;     set to download files found if both `instrument` and `product` are
 ;     specified
@@ -342,6 +483,7 @@ pro mlsoapi, instrument=instrument, $
              carrington_rotation=carrington_rotation, $
              every=every, $
              event=event, $
+             filter_instrument=filter_instrument, $
              download=download, $
              output_dir=output_dir, $
              username=username, $
@@ -371,32 +513,41 @@ pro mlsoapi, instrument=instrument, $
                           base_url=_base_url, $
                           api_version=_api_version
       end
-    (n_elements(instrument) eq 0L) && (n_elements(product) gt 0L): begin
-        print, 'must specify INSTRUMENT if PRODUCT is specified'
+    (n_elements(instrument) eq 0L) && (n_elements(dataset) eq 0L) && (n_elements(product) gt 0L): begin
+        print, 'must specify INSTRUMENT or DATASET if PRODUCT is specified'
       end
     else: begin
-        if (keyword_set(download)) then begin
-          mlsoapi_download_files, url_object, instrument, product, username, $
-                                  start_date=start_date, $
-                                  end_date=end_date, $
-                                  carrington_rotation=carrington_rotation, $
-                                  every=every, $
-                                  event=event, $
-                                  wave_region=wave_region, $
-                                  output_dir=output_dir, $
-                                  base_url=_base_url, $
-                                  api_version=_api_version, $
-                                  verbose=verbose
+        if (n_elements(instrument) gt 0L) then begin
+          if (keyword_set(download)) then begin
+            mlsoapi_download_files, url_object, instrument, product, username, $
+                                    start_date=start_date, $
+                                    end_date=end_date, $
+                                    carrington_rotation=carrington_rotation, $
+                                    every=every, $
+                                    event=event, $
+                                    wave_region=wave_region, $
+                                    output_dir=output_dir, $
+                                    base_url=_base_url, $
+                                    api_version=_api_version, $
+                                    verbose=verbose
+          endif else begin
+            mlsoapi_files, url_object, instrument, product, $
+                          start_date=start_date, $
+                          end_date=end_date, $
+                          carrington_rotation=carrington_rotation, $
+                          every=every, $
+                          event=event, $
+                          wave_region=wave_region, $
+                          base_url=_base_url, $
+                          api_version=_api_version
+          endelse
         endif else begin
-          mlsoapi_files, url_object, instrument, product, $
-                         start_date=start_date, $
-                         end_date=end_date, $
-                         carrington_rotation=carrington_rotation, $
-                         every=every, $
-                         event=event, $
-                         wave_region=wave_region, $
-                         base_url=_base_url, $
-                         api_version=_api_version
+          mlsoapi_data, url_object, dataset, product, $
+                        start_date=start_date, $
+                        end_date=end_date, $
+                        instrument=filter_instrument, $
+                        base_url=_base_url, $
+                        api_version=_api_version
         endelse
       end
   endcase
