@@ -91,18 +91,26 @@ end
 ;   url_object : in, required, type=IDLnetURL object
 ;     `IDLnetURL` to make requests of
 ;   instrument : in, required, type=string
-;     instrument ID to list the products of
+;     instrument (or dataset, if `IS_DATASET` is set) ID to list the products
+;     of
 ;
 ; :Keywords:
+;   is_dataset : in, optional, type=boolean
+;     set to indicate that the `instrument` argument is actually a dataset
 ;   base_url : in, required, type=string
 ;     base URL for the MLSO API server
 ;   api_version : in, optional, type=string, default="v1"
 ;     version of the API to use
 ;-
-pro mlsoapi_products, url_object, instrument, base_url=base_url, api_version=api_version
+pro mlsoapi_products, url_object, $
+                      instrument, $
+                      is_dataset=is_dataset, $
+                      base_url=base_url, $
+                      api_version=api_version
   compile_opt strictarr
 
   products_info = mlso_products(instrument, $
+                                is_dataset=is_dataset, $
                                 base_url=base_url, $
                                 url_object=url_object, $
                                 n_products=n_products)
@@ -292,7 +300,9 @@ end
 ;
 ; :Keywords:
 ;   instrument : in, required, type=string
-;     instrument ID to find the files of
+;     instrument ID to find the products or files of
+;   dataset : in, required, type=string
+;     dataset ID to find the products or data of
 ;   product : in, required, type=string
 ;     product ID to find the files of
 ;   wave_region : in, optional, type=string
@@ -324,6 +334,7 @@ end
 ;     version of the API to use
 ;-
 pro mlsoapi, instrument=instrument, $
+             dataset=dataset, $
              product=product, $
              wave_region=wave_region, $
              start_date=start_date, $
@@ -348,13 +359,17 @@ pro mlsoapi, instrument=instrument, $
   url_object = IDLnetURL()
 
   case 1 of
-    (n_elements(instrument) eq 0L) && (n_elements(product) eq 0L): begin
+    (n_elements(instrument) eq 0L) && (n_elements(dataset) eq 0L) && (n_elements(product) eq 0L): begin
         mlsoapi_instruments, url_object, base_url=_base_url, api_version=_api_version
         print
         mlsoapi_datasets, url_object, base_url=_base_url, api_version=_api_version
       end
-    (n_elements(instrument) gt 0L) && (n_elements(product) eq 0L): begin
-        mlsoapi_products, url_object, instrument, base_url=_base_url, api_version=_api_version
+    ((n_elements(instrument) gt 0L) || (n_elements(dataset) gt 0L)) && (n_elements(product) eq 0L): begin
+        mlsoapi_products, url_object, $
+                          n_elements(instrument) gt 0L ? instrument : dataset, $
+                          is_dataset=n_elements(instrument) eq 0L, $
+                          base_url=_base_url, $
+                          api_version=_api_version
       end
     (n_elements(instrument) eq 0L) && (n_elements(product) gt 0L): begin
         print, 'must specify INSTRUMENT if PRODUCT is specified'

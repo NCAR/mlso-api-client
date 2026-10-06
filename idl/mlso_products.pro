@@ -1,8 +1,9 @@
 ; docformat = 'rst'
 
 ;+
-; Retrieve information about the products available for a given instrument from
-; the `/instruments/{instrument}/products` endpoint.
+; Retrieve information about the products available for a given instrument or
+; dataset from the `/instruments/{instrument}/products` or
+; `/datasets/{dataset}/products/` endpoint.
 ;
 ; :Returns:
 ;   structure with field "products" which is an array of structures with fields
@@ -10,9 +11,12 @@
 ;
 ; :Params:
 ;   instrument : in, required, type=string
-;     instrument ID to find the products of
+;     instrument ID (or dataset ID, if `IS_DATASET` is set) to find the
+;     products of
 ;
 ; :Keywords:
+;   is_dataset : in, optional, type=boolean
+;     set to indicate that the `instrument` argument is actually a dataset
 ;   base_url : in, optional, type=string, default="http://api.mlso.ucar.edu"
 ;     base URL for the API
 ;   api_version : in, optional, type=string, default="v1"
@@ -23,12 +27,14 @@
 ;     set to a named variable to retrieve the number of products
 ;-
 function mlso_products, instrument, $
+                        is_dataset=is_dataset, $
                         base_url=base_url, $
                         api_version=api_version, $
                         url_object=url_object, $
                         n_products=n_products
   compile_opt strictarr
 
+  type_name = keyword_set(is_dataset) ? 'datasets' : 'instruments'
   _base_url = n_elements(base_url) gt 0 ? base_url : 'http://api.mlso.ucar.edu'
   _api_version = n_elements(api_version) gt 0L ? api_version : 'v1'
 
@@ -38,8 +44,8 @@ function mlso_products, instrument, $
     own_url_object = 1B
   endif
 
-  products_url = string(_base_url, _api_version, instrument, $
-                        format='%s/%s/instruments/%s/products')
+  products_url = string(_base_url, _api_version, type_name, instrument, $
+                        format='%s/%s/%s/%s/products')
   products_response = url_object->get(url=products_url, /string_array)
   products_info = json_parse(products_response, /toarray, /tostruct)
   n_products = n_elements(products_info.products)
