@@ -35,6 +35,7 @@ function mlso_data, dataset, product, $
                     end_date=end_date, $
                     instrument=instrument, $
                     base_url=base_url, $
+                    api_version=api_version, $
                     url_object=url_object
   compile_opt strictarr
 
