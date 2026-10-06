@@ -1307,7 +1307,7 @@ def main():
     files_parser.add_argument(
         "--event-type",
         metavar="TYPE",
-        help='event type to search for files within: "cavity", "cme", "jet", "loop", or "surge"',
+        help='event type to search for files within: "cavity", "cme", "jet", "loop", "surge" or "all"',
     )
     files_parser.add_argument(
         "-d", "--download", help="download the filtered files", action="store_true"
