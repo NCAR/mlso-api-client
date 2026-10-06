@@ -473,6 +473,8 @@ end
 ;     base URL for the MLSO API server
 ;   api_version : in, optional, type=string, default="v1"
 ;     version of the API to use
+;   verbose : in, optional, type=boolean
+;     set to print queried URLs and raw JSON responses
 ;-
 pro mlsoapi, instrument=instrument, $
              dataset=dataset, $
