@@ -4,7 +4,7 @@
 Installation
 ============
 
-Note: Downloading files requires an email address registered at the
+Note: Downloading FITS files requires an email address registered at the
 `HAO website`_. Queries can be done without this email username.
 
 .. _HAO website: https://registration.hao.ucar.edu
@@ -22,7 +22,8 @@ To install mlso-api-client, run this command in your terminal:
 
     $ pip install mlso-api-client
 
-This is the preferred method to install mlso-api-client, as it will always install the most recent stable release.
+This is the preferred method to install mlso-api-client, as it will always
+install the most recent stable release.
 
 If you don't have `pip`_ installed, this `Python installation guide`_ can guide
 you through the process.
@@ -66,4 +67,4 @@ IDL
 
 Follow the instructions above for obtaining the source code, either the
 ``git clone`` or ``curl`` command, then put the ``idl`` subdirectory in your
-IDL path via the Workbench or updating the ``IDL_PATH`` environment variable..
+IDL path via the Workbench or updating the ``IDL_PATH`` environment variable.

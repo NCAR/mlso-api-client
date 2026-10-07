@@ -1,7 +1,7 @@
 # API Endpoints
 
 The endpoints for the MLSO data API are listed and discussed below. They can be
-accessed via any client capable of making a GET request.
+accessed via any client capable of making an HTTP GET request.
 
 The MLSO data API is hosted at:
 
@@ -10,8 +10,8 @@ http://api.mlso.ucar.edu/
 ```
 
 There could potentially be multiple API versions, as changes are made in the
-future. The current version is "v1", currently the only API version. So,
-currently, the following endpoints are begin:
+future. The current version is "v1", currently the only API version in
+production. So, currently, the following endpoints all begin:
 
 ```
 http://api.mlso.ucar.edu/v1
@@ -32,6 +32,9 @@ $ curl -sL "http://api.mlso.ucar.edu/v1/about" | python -m json.tool
   "version": "1.1.0"
 }
 ```
+
+Any version 1.x client should work with the the version 1 server, but the exact
+version can be found from the ``/about``
 
 
 ### `HTTP GET /instruments`
