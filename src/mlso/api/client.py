@@ -52,6 +52,7 @@ from pathlib import Path
 from pprint import pformat
 import sys
 import textwrap
+import urllib3
 
 import requests
 from rich.progress import track
@@ -423,7 +424,7 @@ def product_info(
 
 
 def authenticate(
-    username: str = None,
+    username: str | None = None,
     base_url: str = BASE_URL,
     api_version: str = API_VERSION,
     verbose: bool = False,
@@ -468,7 +469,7 @@ def authenticate(
                 )
 
 
-def download_file(file: dict, output_dir: str = ".") -> Path:
+def download_file(file: dict, output_dir: Path = Path(".")) -> Path:
     """Download a single file to the given output directory. The ``file``
     argument is a dict with at least fields "url" and "filename". ``output_dir``
     is simply the directory to put the downloaded file. Return a pathlib.Path of
@@ -490,13 +491,20 @@ def download_file(file: dict, output_dir: str = ".") -> Path:
         raise ServerError(f"Connection error reaching {url}")
 
     if not r.ok:
-        raise ServerError(f"Server response: {r.status_code} {r.reason}")
+        raise ServerError(f"Server response: {r.status_code} {r.reason} for {url}")
 
     path = Path(output_dir) / file["filename"]
 
     with open(path, "wb") as handle:
-        for data in r.iter_content(chunk_size=CHUNK_SIZE):
-            handle.write(data)
+        try:
+            for data in r.iter_content(chunk_size=CHUNK_SIZE):
+                handle.write(data)
+        except urllib3.exceptions.ProtocolError as e:
+            raise ServerError(f"Bad connection error (ProtocolError) for {url}")
+        except urllib3.exceptions.IncompleteRead as e:
+            raise ServerError(f"Bad connection error (IncompleteRead) for {url}")
+        except requests.exceptions.ChunkedEncodingError as e:
+            raise ServerError(f"Bad connection error (ChunkedEncodingError) for {url}")
     return path
 
 
@@ -580,10 +588,12 @@ def files(
     """
     url = f"{base_url}/{api_version}/instruments/{instrument}/products/{product}/files"
 
-    if len(filters) > 0:
-        url += "?" + "&".join([f"{f}={filters[f]}" for f in filters])
-
-    url += ("?" if len(filters) == 0 else "&") + f"client={client}"
+    if filters is not None and len(filters) > 0:
+        url += (
+            "?" + "&".join([f"{f}={filters[f]}" for f in filters]) + f"&client={client}"
+        )
+    else:
+        url += f"?client={client}"
 
     if verbose:
         logger.debug(f"URL: {url}")
@@ -619,10 +629,12 @@ def data(
     """."""
     url = f"{base_url}/{api_version}/datasets/{dataset_id}/products/{product_id}/data"
 
-    if len(filters) > 0:
-        url += "?" + "&".join([f"{f}={filters[f]}" for f in filters])
-
-    url += ("?" if len(filters) == 0 else "&") + f"client={client}"
+    if filters is not None and len(filters) > 0:
+        url += (
+            "?" + "&".join([f"{f}={filters[f]}" for f in filters]) + f"&client={client}"
+        )
+    else:
+        url += f"?client={client}"
 
     if verbose:
         logger.debug(f"URL: {url}")
@@ -877,7 +889,7 @@ def _download_files(
         try:
             filepath = download_file(f, output_dir)
         except ServerError as e:
-            message(f"{f['url']} failed")
+            message(f"download failed: {e}")
             n_failed += 1
 
     if n_failed > 0:
@@ -891,12 +903,11 @@ def _sizeof_fmt(n_bytes: int) -> str:
     """Human friendly file size"""
     if n_bytes == 0:
         return "0 B"
-    if n_bytes >= 1:
-        exponent = min(int(math.log(n_bytes, 1024)), len(unit_list) - 1)
-        quotient = float(n_bytes) / 1024**exponent
-        unit, num_decimals = unit_list[exponent]
-        format_string = "{:.%sf} {}" % (num_decimals)
-        return format_string.format(quotient, unit)
+    exponent = min(int(math.log(n_bytes, 1024)), len(unit_list) - 1)
+    quotient = float(n_bytes) / 1024**exponent
+    unit, num_decimals = unit_list[exponent]
+    format_string = "{:.%sf} {}" % (num_decimals)
+    return format_string.format(quotient, unit)
 
 
 def _files(args: argparse.Namespace):
@@ -1101,13 +1112,13 @@ def _eventdata(args: argparse.Namespace):
         print(
             f"{'-' * date_width} {'-' * date_width} {'-' * instrument_width} {'-' * max_eventtype_width} {'-' * quadrant_width} {'-' * comment_width}"
         )
-    for e in eventlist:
-        instrument = e["instrument"]
-        event_type = e["type"]
-        quadrant = e["quadrant"]
-        comments = textwrap.wrap(e["comment"], width=comment_width)
-        start_date = e["date-obs"]
-        end_date = e["date-end"]
+    for event in eventlist:
+        instrument = event["instrument"]
+        event_type = event["type"]
+        quadrant = event["quadrant"]
+        comments = textwrap.wrap(event["comment"], width=comment_width)
+        start_date = event["date-obs"]
+        end_date = event["date-end"]
         event_type = (
             event_type
             if len(event_type) <= max_eventtype_width
