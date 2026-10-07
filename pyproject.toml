@@ -70,7 +70,7 @@ where = ["src"]
 
 [tool.black]
 line-length = 88
-target-version = ["py313", "py312"]
+target-version = ["py314", "py313", "py312"]
 include = '\.pyi?$'
 exclude = '''
 
