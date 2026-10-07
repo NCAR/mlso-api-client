@@ -26,7 +26,7 @@ def test_instruments(base_url: str, api_version: str, username: str):
 
 def test_instrument_info(base_url: str, api_version: str, username: str):
     instruments = ["kcor", "ucomp"]
-    fields = ["dates", "doi", "landing-page", "name"]
+    fields = ["dates", "description", "doi", "landing-page", "name"]
     for i in instruments:
         info = client.instrument_info(i, base_url=base_url, api_version=api_version)
         assert set(fields) == set(info.keys())
