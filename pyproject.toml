@@ -41,10 +41,10 @@ issues = "https://github.com/NCAR/mlso-api-client/issues"
 changelog = "https://github.com/NCAR/mlso-api-client/blob/master/CHANGELOG.md"
 
 [project.optional-dependencies]
+test = ["pytest", "pytest-cov"]
 dev = [
+  "mlso-api-client[test]",
   "build",
-  "pytest",
-  "pytest-cov",
   "pre-commit",
   "tox",
   "wheel",
@@ -62,9 +62,15 @@ dev = [
 [project.scripts]
 mlsoapi = "mlso.api:client.main"
 
+[tool.setuptools.package-data]
+"mlso.api" = ["py.typed"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
 [tool.black]
 line-length = 88
-target-version = ['py39']
+target-version = ['py314']
 include = '\.pyi?$'
 exclude = '''
 
@@ -89,3 +95,17 @@ exclude = '''
 [tool.pytest.ini_options]
 # increment the --cov-fail-under as we increase test coverage
 addopts = "--cov-report html:coverage_html --cov-report term-missing --cov-fail-under 80"
+
+[tool.tox]
+requires = ["tox>=4.19"]
+env_list = ["3.14", "3.13", "3.12", "type"]
+
+[tool.tox.env_run_base]
+description = "Run test under {base_python}"
+extras = ["test"]
+commands = [["pytest", "--local", "tests"]]
+
+[tool.tox.env.type]
+description = "run type check on code base"
+deps = ["mypy==1.18.2", "types-cachetools>=5.5.0.20240820", "types-chardet>=5.0.4.6"]
+commands = [["mypy", "src{/}mlso"], ["mypy", "--local", "tests"]]
