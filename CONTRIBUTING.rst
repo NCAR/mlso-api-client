@@ -75,7 +75,7 @@ development.
 
       $ mkvirtualenv mlso-api-client
       $ cd mlso-api-client/
-      $ python setup.py develop
+      $ pip install -e .[dev]
 
 4. Create a branch for local development:
 
