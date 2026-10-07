@@ -52,6 +52,7 @@ from pathlib import Path
 from pprint import pformat
 import sys
 import textwrap
+from typing import Iterable
 import urllib3
 
 import requests
@@ -469,7 +470,7 @@ def authenticate(
                 )
 
 
-def download_file(file: dict, output_dir: Path = Path(".")) -> Path:
+def download_file(file: dict, output_dir: Path | str = Path(".")) -> Path:
     """Download a single file to the given output directory. The ``file``
     argument is a dict with at least fields "url" and "filename". ``output_dir``
     is simply the directory to put the downloaded file. Return a pathlib.Path of
@@ -486,7 +487,8 @@ def download_file(file: dict, output_dir: Path = Path(".")) -> Path:
     """
     url = file["url"]
     try:
-        r = session.get(url, stream=True, cookies=session.cookies.get_dict())
+        cookies = {k: v for k, v in session.cookies.get_dict().items() if v is not None}
+        r = session.get(url, stream=True, cookies=cookies)
     except requests.exceptions.ConnectionError as e:
         raise ServerError(f"Connection error reaching {url}")
 
@@ -893,6 +895,7 @@ def _download_files(
             print(e)
             sys.exit(1)
 
+    iterable_files: Iterable[dict]
     if quiet:
         iterable_files = filelist
         message = print
