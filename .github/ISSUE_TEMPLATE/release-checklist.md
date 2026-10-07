@@ -14,14 +14,14 @@ projects: ["NCAR/49"]
 
 ### Release to production
 
-- [ ] merge master to production, `git checkout release; git merge main`
-- [ ] push production to origin, `git push`
-- [ ] tag production with release name of the form vX.Y.Z, e.g., `git tag -a v0.1.0`
+- [ ] merge main to release, `git checkout release; git merge main`
+- [ ] push release to origin, `git push`
+- [ ] tag release with release name of the form vX.Y.Z, e.g., `git tag -a v0.1.0`
 - [ ] push tags, e.g., `git push --tags`
+- [ ] change back to main branch, `git checkout main`
 
 ### Post-release check
 
-- [ ] send email with new release notes to iguana, detoma, and observers
+- [ ] send email with new release notes to MLSO staff
 - [ ] in main, increment version in `pyproject.toml` and `CHANGELOG.md`
 - [ ] install new version, i.e., `pip install -e .[dev]`
-
