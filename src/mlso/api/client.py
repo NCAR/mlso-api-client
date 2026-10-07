@@ -60,7 +60,6 @@ from rich.progress import track
 
 from . import __version__
 
-
 BASE_URL = "http://api.mlso.ucar.edu"
 LOCAL_BASE_URL = "http://127.0.0.1:5000"
 API_VERSION = "v1"
@@ -147,23 +146,19 @@ def instruments(
 
         >>> from mlso.api import client
         >>> client.instruments()
-        [{'end-date': '2026-09-14T00:00:00',
-          'id': 'events',
-          'name': 'MLSO events',
-          'start-date': '2002-02-27T00:00:00'},
-         {'end-date': '2026-09-22T20:07:18',
-          'id': 'kcor',
-          'name': 'COSMO K-Coronagraph (KCor)',
-          'start-date': '2013-09-30T18:57:54'},
-         {'end-date': '2025-03-24T21:03:55',
-          'id': 'ucomp',
-          'name': 'Upgraded Coronal Multi-Polarimeter (UCoMP)',
-          'start-date': '2021-07-15T17:31:43'}]
+        [{'id': 'kcor',
+          'start-date': '2013-09-30T18:57:54',
+          'end-date': '2026-10-06T19:51:27',
+          'name': 'COSMO K-Coronagraph (KCor)'},
+         {'id': 'ucomp',
+          'start-date': '2021-07-15T17:31:43',
+          'end-date': '2026-09-15T20:41:03',
+          'name': 'Upgraded Coronal Multi-Polarimeter (UCoMP)'}]
 
     Or::
 
         >>> [i["id"] for i in client.instruments()]
-        ['events', 'kcor', 'ucomp']
+        ['kcor', 'ucomp']
 
     ``instruments`` can raise a ``ServerError`` if there is a problem with the
     web request.
@@ -843,9 +838,9 @@ def _info(args):
                         textwrap.wrap(
                             p,
                             width=n_columns,
-                            initial_indent=f"{'Description':{key_width}s} : "
-                            if i == 0
-                            else indent,
+                            initial_indent=(
+                                f"{'Description':{key_width}s} : " if i == 0 else indent
+                            ),
                             subsequent_indent=indent,
                         )
                     )
