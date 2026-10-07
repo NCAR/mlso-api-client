@@ -799,8 +799,10 @@ def _info(args):
             print(f"{'Name':{key_width}s} : {info['name']}")
             print(f"{'ID':{key_width}s} : {info['id']}")
             print(f"{'Description':{key_width}s} : {info['description']}")
-            print(f"{'Filters':{key_width}s} : {', '.join(info['filters'])}")
-            print(f"{'Formats':{key_width}s} : {', '.join(info['formats'])}")
+            filters_list = ", ".join([f["name"] for f in info["filters"]])
+            formats_list = ", ".join([f["name"] for f in info["formats"]])
+            print(f"{'Filters':{key_width}s} : {filters_list}")
+            print(f"{'Formats':{key_width}s} : {formats_list}")
         else:
             if args.instrument is not None:
                 info = instrument_info(
@@ -809,9 +811,22 @@ def _info(args):
                     api_version=args.api_version,
                     verbose=args.verbose,
                 )
+                products_info = products(
+                    args.instrument,
+                    base_url=base_url,
+                    api_version=args.api_version,
+                    verbose=args.verbose,
+                )
             else:
                 info = dataset_info(
                     args.dataset,
+                    base_url=base_url,
+                    api_version=args.api_version,
+                    verbose=args.verbose,
+                )
+                products_info = products(
+                    args.dataset,
+                    dataset=True,
                     base_url=base_url,
                     api_version=args.api_version,
                     verbose=args.verbose,
@@ -835,12 +850,13 @@ def _info(args):
                     for i, p in enumerate(info["description"].splitlines())
                 ]
             )
-
             print(f"{'Name':{key_width}s} : {info['name']}")
             print(f"{'DOI':{key_width}s} : {info['doi']}")
             print(f"{'Landing page':{key_width}s} : {info['landing-page']}")
             print(f"{'Start date':{key_width}s} : {info['dates']['start-date']}")
             print(f"{'End date':{key_width}s} : {info['dates']['end-date']}")
+            products_list = ", ".join([p["id"] for p in products_info["products"]])
+            print(f"{'Products':{key_width}s} : {products_list}")
             print(description)
     except ServerError as e:
         print(e)
@@ -911,7 +927,7 @@ def _sizeof_fmt(n_bytes: int) -> str:
 
 
 def _files(args: argparse.Namespace):
-    """Handle printing the ``/instruments/{instrument}/products/{product}``
+    """Handle printing the ``/instruments/{instrument}/products/{product}/files``
     endpoint results, optionally downloading the files.
     """
     filters = {}
