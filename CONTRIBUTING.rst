@@ -91,7 +91,7 @@ development.
    .. code-block:: console
 
       $ flake8 src tests
-      $ pytest tests  # use pytest --local testing again the server running locally
+      $ pytest tests  # use ``pytest --local tests`` if the server is running locally
       $ tox
 
    To get flake8 and tox, just ``pip install`` them into your virtualenv.
