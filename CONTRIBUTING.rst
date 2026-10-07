@@ -90,8 +90,8 @@ development.
 
    .. code-block:: console
 
-      $ flake8 mlso-api-client tests
-      $ python setup.py test or py.test
+      $ flake8 src tests
+      $ pytest tests  # use pytest --local testing again the server running locally
       $ tox
 
    To get flake8 and tox, just ``pip install`` them into your virtualenv.
