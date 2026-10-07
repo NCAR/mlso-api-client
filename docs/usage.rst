@@ -125,14 +125,32 @@ More information about a given product can be found with ``product_info``:
     {
         "description": "Electron density",
         "filters": [
-            "start-date",
-            "end-date",
-            "cr",
-            "every"
+            {
+                "description": "date/time [UT] in the format 'YYYY-MM-DD' or 'YYYY-MM-DDTHH:MM:SS'",
+                "name": "start-date"
+            },
+            {
+                "description": "date/time [UT] in the format 'YYYY-MM-DD' or 'YYYY-MM-DDTHH:MM:SS'",
+                "name": "end-date"
+            },
+            {
+                "description": "Carrington rotation number",
+                "name": "cr"
+            },
+            {
+                "description": "return only a single file for every matching time period; the recognized time periods are second, minute, hour, day, week, month, quarter, or year (optionally ending in 's'); this parameter is an integer followed by one of these time periods, e.g., 'every=2hours', 'every=1day', or 'every=12hours'",
+                "name": "every"
+            }
         ],
         "formats": [
-            "fits",
-            "quicklook"
+            {
+                "description": "Flexible Image Transport System (FITS) files",
+                "name": "fits"
+            },
+            {
+                "description": "PNG, GIF files",
+                "name": "quicklook"
+            }
         ],
         "id": "density",
         "name": "Density",
@@ -249,12 +267,24 @@ a dataset product:
     {
         "description": "coronal mass ejections (CMEs)",
         "filters": [
-            "start-date",
-            "end-date",
-            "instrument"
+            {
+                "description": "date/time [UT] in the format 'YYYY-MM-DD' or 'YYYY-MM-DDTHH:MM:SS'",
+                "name": "start-date"
+            },
+            {
+                "description": "date/time [UT] in the format 'YYYY-MM-DD' or 'YYYY-MM-DDTHH:MM:SS'",
+                "name": "end-date"
+            },
+            {
+                "description": "instrument event as seen in, e.g., 'kcor'",
+                "name": "instrument"
+            }
         ],
         "formats": [
-            "JSON"
+            {
+                "description": "JavaScript Object Notation (JSON)",
+                "name": "json"
+            }
         ],
         "id": "cme",
         "name": "CME"
@@ -450,6 +480,7 @@ dataset product:
     Landing page : https://mlso.hao.ucar.edu/mlso_solar_activity.php
     Start date   : 2002-02-27T00:00:00
     End date     : 2026-10-02T00:00:00
+    Products     : cavity, cme, jet, loop, surge, all
     Description  : The event dataset lists the CME, flares, promince eruptions, filament eruptions, and
                    other significant activity in MLSO observations. Events are found by automated
                    process, observers, and later analysis, but validated and corrected by human
@@ -464,7 +495,7 @@ or
     ID           : cme
     Description  : coronal mass ejections (CMEs)
     Filters      : start-date, end-date, instrument
-    Formats      : JSON
+    Formats      : json
 
 Use the ``data`` subcommand to retrieve the data for a given dataset and product,
 filtered by `start-date`, `end-date`, or `instrument` where the event was seen.
