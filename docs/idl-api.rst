@@ -217,7 +217,8 @@ product from the ``/instruments/{instrument}/products/{product}`` endpoint.
 Returns
 """""""
 
-array of structures with fields "filename" and "url"
+hierarchy of ordered hashes and lists with fields "filename", "url", and other
+file properties
 
 Params
 """"""
@@ -279,13 +280,13 @@ Keywords
 .. code-block:: IDL
 
     function mlso_data, dataset, product, $
-                         n_data=n_data, $
-                         start_date=start_date, $
-                         end_date=end_date, $
-                         instrument=instrument, $
-                         base_url=base_url, $
-                         api_version=api_version, $
-                         url_object=url_object
+                        n_data=n_data, $
+                        start_date=start_date, $
+                        end_date=end_date, $
+                        instrument=instrument, $
+                        base_url=base_url, $
+                        api_version=api_version, $
+                        url_object=url_object
 
 Retrieve information about the data available for a given dataset and product
 from the ``/datasets/{dataset}/products/{product}`` endpoint.
@@ -293,8 +294,8 @@ from the ``/datasets/{dataset}/products/{product}`` endpoint.
 Returns
 """""""
 
-array of structures with fields "date_obs", "date_end", "instrument", "type",
-"quadrant", and "comment"
+hierarchy of ordered hashes and lists with fields "date_obs", "date_end",
+"instrument", "type", "quadrant", and "comment"
 
 Params
 """"""
