@@ -19,6 +19,8 @@ projects: ["NCAR/49"]
 - [ ] tag release with release name of the form vX.Y.Z, e.g., `git tag -a v0.1.0`
 - [ ] push tags, e.g., `git push --tags`
 - [ ] change back to main branch, `git checkout main`
+- [ ] update PyPI with `make release`
+- [ ] update ReadTheDocs
 
 ### Post-release check
 
