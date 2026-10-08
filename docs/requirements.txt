@@ -1,4 +1,6 @@
 mlso-api-client
+requests
+rich
 sphinx
 sphinx_rtd_theme
 myst-parser
