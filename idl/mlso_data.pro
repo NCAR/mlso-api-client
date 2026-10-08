@@ -5,7 +5,7 @@
 ; product from the `/datasets/{dataset}/products/{product}` endpoint.
 ;
 ; :Returns:
-;   array of structures with fields "start_date", "end_date"
+;   hierarchy of ordered hashes and lists
 ;
 ; :Params:
 ;   dataset : in, required, type=string
@@ -65,8 +65,8 @@ function mlso_data, dataset, product, $
 
   data_url += filters
   data_response = url_object->get(url=data_url, /string_array)
-  data_info = json_parse(data_response, /toarray, /tostruct)
-  n_data = n_elements(data_info.events)
+  data_info = json_parse(data_response)
+  n_data = n_elements(data_info['events'])
 
   if (own_url_object) then obj_destroy, url_object
 

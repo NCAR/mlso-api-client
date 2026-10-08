@@ -5,7 +5,7 @@
 ; product from the `/instruments/{instrument}/products/{product}` endpoint.
 ;
 ; :Returns:
-;   array of structures with fields "filename" and "url"
+;   hierarchy of ordered hashes and lists
 ;
 ; :Params:
 ;   instrument : in, required, type=string
@@ -96,8 +96,8 @@ function mlso_files, instrument, product, $
   files_url += filters
 
   files_response = url_object->get(url=files_url, /string_array)
-  files_info = json_parse(files_response, /toarray, /tostruct)
-  n_files = n_elements(files_info.files)
+  files_info = json_parse(files_response)
+  n_files = n_elements(files_info['files'])
 
   if (own_url_object) then obj_destroy, url_object
 

@@ -183,11 +183,15 @@ pro mlsoapi_files, url_object, instrument, product, $
                           event=event, $
                           base_url=base_url, $
                           url_object=url_object)
-  files = files_info.files
+  files = files_info['files']
 
   print, 'Date/time', 'Instrument', 'Product', 'Filesize', 'Filename', $
          format='%-20s %-10s %-13s %-10s %s'
-  max_filename_length = max(strlen(files.filename))
+  max_filename_length = 0
+  for f = 0L, n_elements(files) - 1L do begin
+    max_filename_length = max([strlen((files[f])['filename']), max_filename_length])
+  endfor
+
   hyphen = (byte('-'))[0]
   print, string(bytarr(20) + hyphen), $
          string(bytarr(10) + hyphen), $
@@ -199,9 +203,12 @@ pro mlsoapi_files, url_object, instrument, product, $
   total_size = 0UL
   for f = 0L, n_elements(files) - 1L do begin
     file = files[f]
-    total_size += file.filesize
-    print, file.date_obs, file.instrument, file.product, $
-           mlsoapi_human_size(file.filesize, decimal_places=1), file.filename, $
+    total_size += file['filesize']
+    print, file['date-obs'], $
+           file['instrument'], $
+           file['product'], $
+           mlsoapi_human_size(file['filesize'], decimal_places=1), $
+           file['filename'], $
            format='%-20s %-10s %-13s %10s %s'
   endfor
 
@@ -214,6 +221,7 @@ pro mlsoapi_files, url_object, instrument, product, $
   n_files = string(n_elements(files), format='%d files')
   print, n_files, mlsoapi_human_size(total_size, decimal_places=1), $
          format='%-45s %10s'
+  heap_free, files_info
 end
 
 
@@ -257,7 +265,7 @@ pro mlsoapi_events, url_object, product, $
                           instrument=instrument, $
                           base_url=base_url, $
                           url_object=url_object)
-  events = events_info.events
+  events = events_info['events']
 
   date_width = 19
   instrument_width = 10
@@ -287,8 +295,13 @@ pro mlsoapi_events, url_object, product, $
 
   for e = 0L, n_elements(events) - 1L do begin
     ev = events[e]
-    comments = mg_strwrap(ev.comment, width=comment_width)
-    print, ev.date_obs, ev.date_end, ev.instrument, ev.type, ev.quadrant, comments[0], $
+    comments = mg_strwrap(ev['comment'], width=comment_width)
+    print, ev['date-obs'], $
+           ev['date-end'], $
+           ev['instrument'], $
+           ev['type'], $
+           ev['quadrant'], $
+           comments[0], $
            format=fmt
     for c = 1L, n_elements(comments) - 1L do begin
     print, '', '', '', '', '', comments[c], $
@@ -304,8 +317,9 @@ pro mlsoapi_events, url_object, product, $
          string(bytarr(comment_width) + hyphen), $
          format='%s %s %s %s %s %s'
   n_events = string(n_elements(events), format='%d events')
-  print, n_events, $
-         format='%-45s'
+  print, n_events, format='%-45s'
+
+  heap_free, events_info
 end
 
 
@@ -412,7 +426,7 @@ pro mlsoapi_download_files, url_object, instrument, product, username, $
                           event=event, $
                           base_url=base_url, $
                           url_object=url_object)
-  files = files_info.files
+  files = files_info['files']
 
   if (n_files gt 0L && ~file_test(output_dir, /directory)) then begin
     file_mkdir, output_dir
@@ -420,7 +434,7 @@ pro mlsoapi_download_files, url_object, instrument, product, username, $
 
   for f = 0L, n_files - 1L do begin
     file = files[f]
-    mlso_download_file, file.filename, file.url, username, $
+    mlso_download_file, file['filename'], file['url'], username, $
                         output_dir=output_dir, $
                         base_url=base_url, $
                         url_object=url_object, $
