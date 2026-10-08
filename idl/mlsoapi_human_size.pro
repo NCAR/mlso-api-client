@@ -39,15 +39,15 @@ end
 ;   For example, try::
 ;
 ;     IDL> print, mlsoapi_human_size([2387203222ULL, 12121, 13872960])
-;     2G 12K 13M
+;     2 G 12 K 13 M
 ;     IDL> print, mlsoapi_human_size([2387203222ULL, 12121, 13872960], /si)
-;     2G 12K 14M
+;     2 G 12 K 14 M
 ;     IDL> print, mlsoapi_human_size([2387203222ULL, 12121, 13872960], decimal_places=2)
-;     2.22G 11.84K 13.23M
+;     2.22 G 11.84 K 13.23 M
 ;     IDL> print, mlsoapi_human_size([2387203222ULL, 12121, 13872960], /long)
-;     2GB 12KB 13MB
+;     2 GiB 12 KiB 13 MiB
 ;     IDL> print, mlsoapi_human_size([2387203222ULL, 12121, 13872960], /bits)
-;     2Gb 12Kb 13Mb
+;     18 Gib 95 Kib 106 Mib
 ;
 ; :Returns:
 ;    string or `strarr`
@@ -97,7 +97,7 @@ function mlsoapi_human_size, sizes, $
 
   for i = 0L, n_sizes - 1L do begin
     level = 0L
-    s = sizes[i]
+    s = sizes[i] * (keyword_set(bits) ? 8 : 1)
     while (s ge powers_of && level lt (n_units - 1L)) do begin
       s /= powers_of
       level++
