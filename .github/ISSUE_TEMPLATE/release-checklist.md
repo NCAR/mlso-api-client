@@ -20,7 +20,7 @@ projects: ["NCAR/49"]
 - [ ] push tags, e.g., `git push --tags`
 - [ ] change back to main branch, `git checkout main`
 - [ ] update PyPI with `make release`
-- [ ] update ReadTheDocs
+- [ ] check that the ReadTheDocs docs have successfully updated
 
 ### Post-release check
 
