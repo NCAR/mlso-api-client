@@ -704,12 +704,12 @@ To retrieve information about the products and files available for UCoMP:
       ID              STRING    'l1'
       TITLE           STRING    'Level 1'
     IDL> files_info = mlso_files('ucomp', 'l2', wave_region='789', start_date='2025-03-23', end_date='2025-03-25')
-    IDL> files = files_info.files
+    IDL> files = files_info['files']
     IDL> n_files = n_elements(files)
     IDL> .run
     - for f = 0L, n_files - 1L do begin
-    -   print, f + 1, n_files, files[f].filename, format='%d/%d: %s'
-    -   print, files[f].url, format='     %s'
+    -   print, f + 1, n_files, (files[f])['filename'], format='%d/%d: %s'
+    -   print, (files[f])['url'], format='     %s'
     - endfor
     -
     - end
@@ -725,11 +725,12 @@ username:
 
     IDL> username = 'email@example.com'
     IDL> .run
-    - for f = 0L, n_elements(files_info.files) - 1L do begin
-    -   file = files_info.files[f]
-    -   mlso_download_file, file.filename, file.url, username, output_dir='data'
+    - for f = 0L, n_elements(files_info['files']) - 1L do begin
+    -   file = (files_info['files'])[f]
+    -   mlso_download_file, file['filename'], file['url'], username, output_dir='data'
     - endfor
     -
+    - heap_free, files_info
     - end
 
 Similarly for datasets, use the ``IS_DATASET`` keyword for ``mlso_products``
@@ -747,13 +748,14 @@ names.
        ID              STRING    'cavity'
        NAME            STRING    'Coronal cavity'
     IDL> data_info = mlso_data('events', 'cme', start_date='2026-04-01', end_date='2026-04-03')
-    IDL> events = data_info.events
+    IDL> events = data_info['events']
     IDL> n_events = n_elements(events)
     IDL> .run
     - for e = 0L, n_events - 1L do begin
-    -   print, e + 1, n_events, events[e].date_obs, events[e].date_end, format='%d/%d: %s-%s'
+    -   print, e + 1, n_events, (events[e])['date_obs'], (events[e])['date_end'], format='%d/%d: %s-%s'
     - endfor
     -
+    - heap_free, data_info
     - end
     1/1: 2026-04-01T22:36:00-2026-04-02T00:17:00
 
