@@ -428,7 +428,7 @@ pro mlsoapi_download_files, url_object, instrument, product, username, $
                           url_object=url_object)
   files = files_info['files']
 
-  if (n_files gt 0L && ~file_test(output_dir, /directory)) then begin
+  if (n_files gt 0L && n_elements(output_dir) gt 0L && ~file_test(output_dir, /directory)) then begin
     file_mkdir, output_dir
   endif
 
