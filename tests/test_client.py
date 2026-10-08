@@ -10,7 +10,7 @@ from mlso.api import client
 def test_about(base_url: str, api_version: str, username: str):
     fields = ["documentation", "homepage", "support", "version"]
     about_response = client.about(base_url=base_url, api_version=api_version)
-    assert type(about_response) == dict
+    assert isinstance(about_response, dict)
     for f in fields:
         assert f in about_response
 
@@ -20,7 +20,7 @@ def test_instruments(base_url: str, api_version: str, username: str):
     instruments_response = client.instruments(
         base_url=base_url, api_version=api_version
     )
-    assert type(instruments_response) == list
+    assert isinstance(instruments_response, list)
     assert set(instruments) == set([i["id"] for i in instruments_response])
 
 
@@ -125,7 +125,7 @@ def test_download_file(base_url: str, api_version: str, username: str):
 def test_datasets(base_url: str, api_version: str, username: str):
     datasets = ["events"]
     datasets_response = client.datasets(base_url=base_url, api_version=api_version)
-    assert type(datasets_response) == list
+    assert isinstance(datasets_response, list)
     assert set(datasets) == set([i["id"] for i in datasets_response])
 
 
