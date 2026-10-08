@@ -9,6 +9,7 @@ function mlsoapiclient_testcase::init, $
                                  local=local, $
                                  base_url=base_url, $
                                  api_version=api_version, $
+                                 username=username, $
                                  _extra=e
   compile_opt strictarr
 
@@ -21,6 +22,8 @@ function mlsoapiclient_testcase::init, $
     : (keyword_set(local) ? 'http://127.0.0.1:5000' : 'http://api.mlso.ucar.edu')
   self.api_version = n_elements(api_version) gt 0L ? api_version : 'v1'
 
+  if (n_elements(username) gt 0L) then self.username = username
+
   return, 1
 end
 
@@ -31,5 +34,6 @@ pro mlsoapiclient_testcase__define
   !null = {mlsoapiclient_testcase, inherits MGutTestCase, $
            root: '', $
            base_url: '', $
+           username: '', $
            api_version: ''}
 end
