@@ -440,6 +440,7 @@ pro mlsoapi_download_files, url_object, instrument, product, username, $
                         url_object=url_object, $
                         verbose=verbose
   endfor
+  heap_free, files_info
 end
 
 
