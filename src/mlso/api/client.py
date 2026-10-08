@@ -110,7 +110,7 @@ def about(
         {'documentation': 'https://mlso-api-client.readthedocs.io/en/latest/',
         'homepage': 'https://www2.hao.ucar.edu/mlso',
         'support': 'mlso_data_requests@ucar.edu',
-        'version': '1.0.0'}
+        'version': '1.1.0'}
 
     ``about`` can raise a ``ServerError`` if the server response is not valid.
     """
