@@ -515,6 +515,7 @@ def files(
     api_version: str | None = API_VERSION,
     verbose: bool = False,
     client: str | None = "python",
+    page: int = 0,
 ):
     """Retrieve metadata about files from a given instrument/product and
     filtered by various optional filters, i.e., handle retrieving the results
@@ -587,10 +588,12 @@ def files(
 
     if filters is not None and len(filters) > 0:
         url += (
-            "?" + "&".join([f"{f}={filters[f]}" for f in filters]) + f"&client={client}"
+            "?"
+            + "&".join([f"{f}={filters[f]}" for f in filters])
+            + f"&client={client}&page={page}"
         )
     else:
-        url += f"?client={client}"
+        url += f"?client={client}&page={page}"
 
     if verbose:
         logger.debug(f"URL: {url}")
@@ -622,16 +625,19 @@ def data(
     api_version: str | None = API_VERSION,
     verbose: bool = False,
     client: str | None = "python",
+    page: int = 0,
 ):
     """."""
     url = f"{base_url}/{api_version}/datasets/{dataset_id}/products/{product_id}/data"
 
     if filters is not None and len(filters) > 0:
         url += (
-            "?" + "&".join([f"{f}={filters[f]}" for f in filters]) + f"&client={client}"
+            "?"
+            + "&".join([f"{f}={filters[f]}" for f in filters])
+            + f"&client={client}&page={page}"
         )
     else:
-        url += f"?client={client}"
+        url += f"?client={client}&page={page}"
 
     if verbose:
         logger.debug(f"URL: {url}")
@@ -965,6 +971,7 @@ def _files(args: argparse.Namespace):
             api_version=args.api_version,
             verbose=args.verbose,
             client="cli",
+            page=args.page,
         )
     except ServerError as e:
         print(e)
@@ -1047,7 +1054,8 @@ def _files(args: argparse.Namespace):
             print(
                 f"{'-' * datetime_width} {'-' * instrument_width} {product_sep} {'-' * filesize_width} {'-' * max_filename_width}"
             )
-            n_files = f"{len(filelist)} files"
+            page_info = f"(page {args.page})" if args.page > 0 else ""
+            n_files = f"{len(filelist)} files {page_info}"
             files_width = (
                 datetime_width + 1 + instrument_width + 1 + max_productname_width
             )
@@ -1082,6 +1090,7 @@ def _eventdata(args: argparse.Namespace):
             api_version=args.api_version,
             verbose=args.verbose,
             client="cli",
+            page=args.page,
         )
     except ServerError as e:
         print(e)
@@ -1149,7 +1158,8 @@ def _eventdata(args: argparse.Namespace):
         print(
             f"{'-' * date_width} {'-' * date_width} {'-' * instrument_width} {'-' * max_eventtype_width} {'-' * quadrant_width} {'-' * comment_width}"
         )
-        print(f"{len(eventlist):d} events")
+        page_info = f"(page {args.page})" if args.page > 0 else ""
+        print(f"{len(eventlist):d} events {page_info}")
 
 
 def _data(args: argparse.Namespace):
@@ -1355,6 +1365,7 @@ def main():
         help='filter by file format: "fits" or "quicklook"',
         default="fits",
     )
+    files_parser.add_argument("--page", help="page of results", type=int, default=0)
     files_parser.set_defaults(func=_files, parser=files_parser)
 
     datasets_parser = subparsers.add_parser("datasets", help="List available datasets")
@@ -1391,6 +1402,7 @@ def main():
         default=None,
     )
     data_parser.add_argument("-i", "--instrument", help="instrument", default=None)
+    data_parser.add_argument("--page", help="page of results", type=int, default=0)
     data_parser.set_defaults(func=_data, parser=data_parser)
 
     # parse args and call appropriate subcommand
