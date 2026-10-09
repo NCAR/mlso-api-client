@@ -32,6 +32,9 @@
 ;     file format: "fits" or "quicklook"
 ;   client : in, optional, type=string, default="idl"
 ;     client used, e.g., "idl", "forward"
+;   page : in, optional, type=int, default=0
+;     page index of results to request, e.g., 0 is the first page, 1 is the
+;     second page, etc.
 ;   base_url : in, optional, type=string, default="http://api.mlso.ucar.edu"
 ;     base URL for the API
 ;   url_object : in, optional, type=IDLnetURL object
@@ -51,6 +54,7 @@ function mlso_files, instrument, product, $
                      event=event, $
                      format=format, $
                      client=client, $
+                     page=page, $
                      base_url=base_url, $
                      api_version=api_version, $
                      url_object=url_object
@@ -59,6 +63,7 @@ function mlso_files, instrument, product, $
   _base_url = n_elements(base_url) gt 0 ? base_url : 'http://api.mlso.ucar.edu'
   _api_version = n_elements(api_version) gt 0L ? api_version : 'v1'
   _client = n_elements(client) gt 0L ? client : 'idl'
+  _page = n_elements(page) gt 0L ? page : 0L
 
   own_url_object = 0B
   if (~obj_valid(url_object)) then begin
@@ -91,7 +96,8 @@ function mlso_files, instrument, product, $
     filters = [filters, string(format, format='format=%s')]
   endif
   filters = [filters, string(_client, format='client=%s')]
-  filters = n_elements(filters) gt 0L ? ('?' + strjoin(filters, '&')) : ''
+  filters = [filters, string(_page, format='page=%d')]
+  filters = '?' + strjoin(filters, '&')
 
   files_url += filters
 

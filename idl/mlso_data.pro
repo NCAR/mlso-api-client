@@ -20,6 +20,9 @@
 ;     end date to end looking for files to
 ;   instrument : in, optional, type=string
 ;     filter datasets by instrument observed in
+;   page : in, optional, type=int, default=0
+;     page index of results to request, e.g., 0 is the first page, 1 is the
+;     second page, etc.
 ;   base_url : in, optional, type=string, default="http://api.mlso.ucar.edu"
 ;     base URL for the API
 ;   url_object : in, optional, type=IDLnetURL object
@@ -34,6 +37,7 @@ function mlso_data, dataset, product, $
                     start_date=start_date, $
                     end_date=end_date, $
                     instrument=instrument, $
+                    page=page, $
                     base_url=base_url, $
                     api_version=api_version, $
                     url_object=url_object
@@ -42,6 +46,7 @@ function mlso_data, dataset, product, $
   _base_url = n_elements(base_url) gt 0 ? base_url : 'http://api.mlso.ucar.edu'
   _api_version = n_elements(api_version) gt 0L ? api_version : 'v1'
   _client = n_elements(client) gt 0L ? client : 'idl'
+  _page = n_elements(page) gt 0L ? page : 0L
 
   own_url_object = 0B
   if (~obj_valid(url_object)) then begin
@@ -61,7 +66,8 @@ function mlso_data, dataset, product, $
   if (n_elements(instrument) gt 0L) then begin
     filters = [filters, string(event, format='instrument=%s')]
   endif
-  filters = n_elements(filters) gt 0L ? ('?' + strjoin(filters, '&')) : ''
+  filters = [filters, string(_page, format='page=%d')]
+  filters = '?' + strjoin(filters, '&')
 
   data_url += filters
   data_response = url_object->get(url=data_url, /string_array)

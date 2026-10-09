@@ -170,7 +170,8 @@ pro mlsoapi_files, url_object, instrument, product, $
                    end_date=end_date, $
                    carrington_rotation=carrington_rotation, $
                    every=every, $
-                   event=event
+                   event=event, $
+                   page=page
   compile_opt strictarr
 
   files_info = mlso_files(instrument, product, $
@@ -181,6 +182,7 @@ pro mlsoapi_files, url_object, instrument, product, $
                           carrington_rotation=carrington_rotation, $
                           every=every, $
                           event=event, $
+                          page=page, $
                           base_url=base_url, $
                           url_object=url_object)
   files = files_info['files']
@@ -218,7 +220,8 @@ pro mlsoapi_files, url_object, instrument, product, $
          string(bytarr(10) + hyphen), $
          string(bytarr(max_filename_length) + hyphen), $
          format='%s %s %s %s %s'
-  n_files = string(n_elements(files), format='%d files')
+  page_info = page eq 0 ? '' : string(page, format='(%"(page %d)")')
+  n_files = string(n_elements(files), page_info, format='%d files %s')
   print, n_files, mlsoapi_human_size(total_size, decimal_places=1), $
          format='%-45s %10s'
   heap_free, files_info
@@ -245,6 +248,9 @@ end
 ;     end date to end looking for files to
 ;   instrument : in, optional, type=string
 ;     filter datasets by instrument observed in
+;   page : in, optional, type=int, default=0
+;     page index of results to request, e.g., 0 is the first page, 1 is the
+;     second page, etc.
 ;   base_url : in, required, type=string
 ;     base URL for the MLSO API server
 ;   api_version : in, optional, type=string, default="v1"
@@ -254,6 +260,7 @@ pro mlsoapi_events, url_object, product, $
                     start_date=start_date, $
                     end_date=end_date, $
                     instrument=instrument, $
+                    page=page, $
                     base_url=base_url, $
                     api_version=api_version
   compile_opt strictarr
@@ -263,6 +270,7 @@ pro mlsoapi_events, url_object, product, $
                           start_date=start_date, $
                           end_date=end_date, $
                           instrument=instrument, $
+                          page=page, $
                           base_url=base_url, $
                           url_object=url_object)
   events = events_info['events']
@@ -295,7 +303,16 @@ pro mlsoapi_events, url_object, product, $
 
   for e = 0L, n_elements(events) - 1L do begin
     ev = events[e]
-    comments = mg_strwrap(ev['comment'], width=comment_width)
+    comments = ev['comment']
+
+    ; remove leading/trailing newlines
+    re = '[[:space:]]*(.*)'
+    pos = stregex(comments, re, /subexpr, len=len)
+    comments = strmid(comments, pos[1], len[1])
+    rpos = stregex(string(reverse(byte(comments))), '[[:space:]]*(.*)', /subexpr, len=rlen)
+    comments = strmid(comments, 0, rlen[1])
+
+    comments = mg_strwrap(comments, width=comment_width)
     print, ev['date-obs'], $
            ev['date-end'], $
            ev['instrument'], $
@@ -316,7 +333,8 @@ pro mlsoapi_events, url_object, product, $
          string(bytarr(quadrant_width) + hyphen), $
          string(bytarr(comment_width) + hyphen), $
          format='%s %s %s %s %s %s'
-  n_events = string(n_elements(events), format='%d events')
+  page_info = page eq 0 ? '' : string(page, format='(%"(page %d)")')
+  n_events = string(n_elements(events), page_info, format='%d events %s')
   print, n_events, format='%-45s'
 
   heap_free, events_info
@@ -345,6 +363,9 @@ end
 ;     end date to end looking for files to
 ;   instrument : in, optional, type=string
 ;     filter datasets by instrument observed in
+;   page : in, optional, type=int, default=0
+;     page index of results to request, e.g., 0 is the first page, 1 is the
+;     second page, etc.
 ;   base_url : in, required, type=string
 ;     base URL for the MLSO API server
 ;   api_version : in, optional, type=string, default="v1"
@@ -354,6 +375,7 @@ pro mlsoapi_data, url_object, dataset, product, $
                   start_date=start_date, $
                   end_date=end_date, $
                   instrument=instrument, $
+                  page=page, $
                   base_url=base_url, $
                   api_version=api_version
   compile_opt strictarr
@@ -363,6 +385,7 @@ pro mlsoapi_data, url_object, dataset, product, $
                     start_date=start_date, $
                     end_date=end_date, $
                     instrument=instrument, $
+                    page=page, $
                     base_url=base_url, $
                     api_version=api_version
   endif
@@ -396,6 +419,9 @@ end
 ;     year
 ;   event : in, optional, type=string
 ;     event type to download files during, currently only "cme"
+;   page : in, optional, type=int, default=0
+;     page index of results to request, e.g., 0 is the first page, 1 is the
+;     second page, etc.
 ;   base_url : in, required, type=string
 ;     base URL for the MLSO API server
 ;   api_version : in, optional, type=string, default="v1"
@@ -413,6 +439,7 @@ pro mlsoapi_download_files, url_object, instrument, product, username, $
                             every=every, $
                             event=event, $
                             output_dir=output_dir, $
+                            page=page, $
                             verbose=verbose
   compile_opt strictarr
 
@@ -424,6 +451,7 @@ pro mlsoapi_download_files, url_object, instrument, product, username, $
                           carrington_rotation=carrington_rotation, $
                           every=every, $
                           event=event, $
+                          page=page, $
                           base_url=base_url, $
                           url_object=url_object)
   files = files_info['files']
@@ -484,6 +512,9 @@ end
 ;     username registered with HAO website, required if `/DOWNLOAD` set
 ;   local : in, optional, type=boolean
 ;     set to use localhost (http://127.0.0.1:5000) as the server URL
+;   page : in, optional, type=int, default=0
+;     page index of files or data results to request, e.g., 0 is the first page,
+;     1 is the second page, etc.
 ;   base_url : in, required, type=string, default="http://api.mlso.ucar.edu"
 ;     base URL for the MLSO API server
 ;   api_version : in, optional, type=string, default="v1"
@@ -505,6 +536,7 @@ pro mlsoapi, instrument=instrument, $
              output_dir=output_dir, $
              username=username, $
              local=local, $
+             page=page, $
              base_url=base_url, $
              api_version=api_version, $
              verbose=verbose
@@ -514,6 +546,7 @@ pro mlsoapi, instrument=instrument, $
     ? base_url $
     : (keyword_set(local) ? 'http://127.0.0.1:5000' : 'http://api.mlso.ucar.edu')
   _api_version = n_elements(api_version) gt 0L ? api_version : 'v1'
+  _page = n_elements(page) gt 0L ? page : 0L
 
   url_object = IDLnetURL()
 
@@ -544,6 +577,7 @@ pro mlsoapi, instrument=instrument, $
                                     event=event, $
                                     wave_region=wave_region, $
                                     output_dir=output_dir, $
+                                    page=_page, $
                                     base_url=_base_url, $
                                     api_version=_api_version, $
                                     verbose=verbose
@@ -555,6 +589,7 @@ pro mlsoapi, instrument=instrument, $
                           every=every, $
                           event=event, $
                           wave_region=wave_region, $
+                          page=_page, $
                           base_url=_base_url, $
                           api_version=_api_version
           endelse
@@ -563,6 +598,7 @@ pro mlsoapi, instrument=instrument, $
                         start_date=start_date, $
                         end_date=end_date, $
                         instrument=filter_instrument, $
+                        page=_page, $
                         base_url=_base_url, $
                         api_version=_api_version
         endelse
