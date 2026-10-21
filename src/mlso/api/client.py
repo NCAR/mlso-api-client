@@ -138,12 +138,13 @@ def about(
 
 
 def instruments(
+    info: bool = True,
     base_url: str = BASE_URL,
     api_version: str = API_VERSION,
     verbose: bool = False,
 ):
-    """Retrieve list of instruments from the ``/instruments/{instrument}``
-    endpoint with some of their properties. For example::
+    """Retrieve the list of instruments and, if `info` is `True`, some of their
+    properties from the ``/instruments/{instrument}`` endpoint. For example::
 
         >>> from mlso.api import client
         >>> client.instruments()
@@ -181,6 +182,8 @@ def instruments(
         logger.debug(pformat(instruments))
 
     instruments = sorted(instruments)
+    if not info:
+        return instruments
 
     results = []
 
@@ -242,6 +245,7 @@ def instrument_info(
 
 
 def datasets(
+    info: bool = True,
     base_url: str = BASE_URL,
     api_version: str = API_VERSION,
     verbose: bool = False,
@@ -263,6 +267,9 @@ def datasets(
         logger.debug(pformat(datasets))
 
     datasets = sorted(datasets)
+
+    if not info:
+        return datasets
 
     results = []
 
@@ -702,16 +709,20 @@ def _instruments(args: argparse.Namespace):
     interface.
     """
     base_url = LOCAL_BASE_URL if args.local else args.base_url
+    info = not vars(args)["1"]
     try:
         instruments_response = instruments(
-            base_url, api_version=args.api_version, verbose=args.verbose
+            info=info,
+            base_url=base_url,
+            api_version=args.api_version,
+            verbose=args.verbose,
         )
     except ServerError as e:
         print(e)
         return
 
-    if vars(args)["1"]:
-        print(" ".join([i["id"] for i in instruments_response]))
+    if not info:
+        print(" ".join(instruments_response))
     else:
         print(f"{'ID':8s} {'Instrument name':44s} Dates available")
         print(f"{'-' * 8} {'-' * 44} {'-' * 23}")
@@ -729,16 +740,20 @@ def _datasets(args: argparse.Namespace):
     interface.
     """
     base_url = LOCAL_BASE_URL if args.local else args.base_url
+    info = not vars(args)["1"]
     try:
         datasets_response = datasets(
-            base_url, api_version=args.api_version, verbose=args.verbose
+            info=info,
+            base_url=base_url,
+            api_version=args.api_version,
+            verbose=args.verbose,
         )
     except ServerError as e:
         print(e)
         return
 
-    if vars(args)["1"]:
-        print(" ".join([i["id"] for i in datasets_response]))
+    if not info:
+        print(" ".join(datasets_response))
     else:
         print(f"{'ID':8s} {'Dataset name':44s} Dates available")
         print(f"{'-' * 8} {'-' * 44} {'-' * 23}")
