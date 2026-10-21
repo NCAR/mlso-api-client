@@ -45,6 +45,7 @@ through the `main` routine in this module.
 
 import argparse
 import datetime
+import json
 import logging
 import math
 import os
@@ -377,9 +378,15 @@ def products(
         raise ServerError(f"Connection error reaching {url}")
 
     if not r.ok:
-        j = r.json()
-        msg = j["message"]
-        raise ServerError(f"Server response: {r.status_code} {r.reason} ({msg})")
+        try:
+            j = r.json()
+        except json.decoder.JSONDecodeError as e:
+            j = {"message": r.text}
+        if verbose:
+            msg = f'({j["message"]})'
+        else:
+            msg = ""
+        raise ServerError(f"Server response: {r.status_code} {r.reason} {msg}")
 
     j = r.json()
 
@@ -410,6 +417,17 @@ def product_info(
         r = requests.get(url)
     except requests.exceptions.ConnectionError as e:
         raise ServerError(f"Connection error reaching {url}")
+
+    if not r.ok:
+        try:
+            j = r.json()
+        except json.decoder.JSONDecodeError as e:
+            j = {"message": r.text}
+        if verbose:
+            msg = f'({j["message"]})'
+        else:
+            msg = ""
+        raise ServerError(f"Server response: {r.status_code} {r.reason} {msg}")
 
     j = r.json()
 
