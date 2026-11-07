@@ -67,6 +67,8 @@ API_VERSION = "v1"
 SIGNUP_URL = "https://registration.hao.ucar.edu"
 DOCS = "https://mlso-api-client.readthedocs.io/en/latest/"
 
+# default width of the terminal
+DEFAULT_WIDTH = 100
 
 # chunk size for downloading files, 1-10M is probably the most efficient size
 # for good speed and reasonable memory usage
@@ -96,6 +98,17 @@ class ServerError(Exception):
     """
 
     pass
+
+
+def get_terminal_width() -> 120:
+    """Retrieve the width of the terminal. Returns ``None`` if not running in an
+    environment where the width can be retrieved.
+    """
+    try:
+        columns = os.get_terminal_size().columns
+    except OSError as e:
+        columns = DEFAULT_WIDTH
+    return columns
 
 
 # Top-level Python API
@@ -818,7 +831,7 @@ def _info(args):
     """Handle printing the ``/instruments/{instrument}/products/{product}``
     endpoint results for the command line interface.
     """
-    n_columns = os.get_terminal_size().columns
+    n_columns = get_terminal_width()
 
     base_url = LOCAL_BASE_URL if args.local else args.base_url
     try:
@@ -1022,7 +1035,7 @@ def _files(args: argparse.Namespace):
         print(f"End date   : {end_date}")
         print(f"Filesize   : {filesize}")
 
-    n_columns = os.get_terminal_size().columns
+    n_columns = get_terminal_width()
 
     datetime_width = 21
     instrument_width = 10
@@ -1142,7 +1155,8 @@ def _eventdata(args: argparse.Namespace):
     eventlist = events_response["events"]
     max_eventtype_width = 7
     instrument_width = 10
-    n_columns = os.get_terminal_size().columns
+    n_columns = get_terminal_width()
+
     date_width = 21
     quadrant_width = 10
     comment_width = max(
@@ -1290,6 +1304,13 @@ def main():
     )
     parser.add_argument(
         "-q", "--quiet", help="surpress informational messages", action="store_true"
+    )
+    parser.add_argument(
+        "-w",
+        "--width",
+        help="line width to use",
+        type=int,
+        default=None,
     )
 
     subparsers = parser.add_subparsers(
@@ -1440,6 +1461,10 @@ def main():
 
     # parse args and call appropriate subcommand
     args = parser.parse_args()
+
+    if args.width is not None:
+        global DEFAULT_WIDTH
+        DEFAULT_WIDTH = args.width
 
     # don't print "about" info, if the subcommand is "about" since it would be
     # printed twice in that case
