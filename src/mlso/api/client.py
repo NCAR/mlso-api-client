@@ -41,6 +41,10 @@ interface is typically used like::
 
 The Unix command-line interface, ``mlsoapi``, is also available and accessed
 through the `main` routine in this module.
+
+The command line utility exits with status code 0 for no error, 6 for user not
+found when downloading a file and otherwise HTTP status code / 100, e.g., an
+HTTP 404 would exit with status code 4.
 """
 
 import argparse
@@ -53,7 +57,7 @@ from pathlib import Path
 from pprint import pformat
 import sys
 import textwrap
-from typing import Iterable
+from typing import Iterable, Optional
 import urllib3
 
 import requests
@@ -95,9 +99,19 @@ class UserNotFound(Exception):
 class ServerError(Exception):
     """Exception raised when there is a problem with the server not returning a
     valid result.
+
+    Parameters
+    ----------
+    message : str
+        Description of the error.
+    status_code : int, optional
+        HTTP status code of the server response, if any; ``None`` for errors
+        such as connection failures where no response was received.
     """
 
-    pass
+    def __init__(self, message: str, status_code: Optional[int] = None):
+        super().__init__(message)
+        self.status_code = status_code
 
 
 def get_terminal_width() -> 120:
@@ -135,12 +149,14 @@ def about(
     try:
         r = requests.get(url)
     except requests.exceptions.ConnectionError as e:
-        raise ServerError(f"Connection error reaching {url}")
+        raise ServerError(f"Connection error reaching {url}", r.status_code)
 
     if not r.ok:
         j = r.json()
         msg = j["message"]
-        raise ServerError(f"Server response: {r.status_code} {r.reason} ({msg})")
+        raise ServerError(
+            f"Server response: {r.status_code} {r.reason} ({msg})", r.status_code
+        )
 
     j = r.json()
 
@@ -185,10 +201,10 @@ def instruments(
     try:
         r = requests.get(url)
     except requests.exceptions.ConnectionError as e:
-        raise ServerError(f"Connection error reaching {url}")
+        raise ServerError(f"Connection error reaching {url}", r.status_code)
 
     if not r.ok:
-        raise ServerError(f"Server response: {r.status_code} {r.reason}")
+        raise ServerError(f"Server response: {r.status_code} {r.reason}", r.status_code)
 
     instruments = r.json()
     if verbose:
@@ -208,7 +224,7 @@ def instruments(
         try:
             r = requests.get(url)
         except requests.exceptions.ConnectionError as e:
-            raise ServerError(f"Connection error reaching {url}")
+            raise ServerError(f"Connection error reaching {url}", r.status_code)
 
         j = r.json()
 
@@ -247,7 +263,7 @@ def instrument_info(
     try:
         r = requests.get(url)
     except requests.exceptions.ConnectionError as e:
-        raise ServerError(f"Connection error reaching {url}")
+        raise ServerError(f"Connection error reaching {url}", r.status_code)
 
     j = r.json()
 
@@ -270,10 +286,10 @@ def datasets(
     try:
         r = requests.get(url)
     except requests.exceptions.ConnectionError as e:
-        raise ServerError(f"Connection error reaching {url}")
+        raise ServerError(f"Connection error reaching {url}", r.status_code)
 
     if not r.ok:
-        raise ServerError(f"Server response: {r.status_code} {r.reason}")
+        raise ServerError(f"Server response: {r.status_code} {r.reason}", r.status_code)
 
     datasets = r.json()
     if verbose:
@@ -294,7 +310,7 @@ def datasets(
         try:
             r = requests.get(url)
         except requests.exceptions.ConnectionError as e:
-            raise ServerError(f"Connection error reaching {url}")
+            raise ServerError(f"Connection error reaching {url}", r.status_code)
 
         j = r.json()
 
@@ -334,7 +350,7 @@ def dataset_info(
     try:
         r = requests.get(url)
     except requests.exceptions.ConnectionError as e:
-        raise ServerError(f"Connection error reaching {url}")
+        raise ServerError(f"Connection error reaching {url}", r.status_code)
 
     j = r.json()
 
@@ -395,7 +411,7 @@ def products(
     try:
         r = requests.get(url)
     except requests.exceptions.ConnectionError as e:
-        raise ServerError(f"Connection error reaching {url}")
+        raise ServerError(f"Connection error reaching {url}", r.status_code)
 
     if not r.ok:
         try:
@@ -406,7 +422,9 @@ def products(
             msg = f'({j["message"]})'
         else:
             msg = ""
-        raise ServerError(f"Server response: {r.status_code} {r.reason} {msg}")
+        raise ServerError(
+            f"Server response: {r.status_code} {r.reason} {msg}", r.status_code
+        )
 
     j = r.json()
 
@@ -436,7 +454,7 @@ def product_info(
     try:
         r = requests.get(url)
     except requests.exceptions.ConnectionError as e:
-        raise ServerError(f"Connection error reaching {url}")
+        raise ServerError(f"Connection error reaching {url}", r.status_code)
 
     if not r.ok:
         try:
@@ -447,7 +465,9 @@ def product_info(
             msg = f'({j["message"]})'
         else:
             msg = ""
-        raise ServerError(f"Server response: {r.status_code} {r.reason} {msg}")
+        raise ServerError(
+            f"Server response: {r.status_code} {r.reason} {msg}", r.status_code
+        )
 
     j = r.json()
 
@@ -487,7 +507,7 @@ def authenticate(
         try:
             r = session.get(url)
         except requests.exceptions.ConnectionError as e:
-            raise ServerError(f"Connection error reaching {url}")
+            raise ServerError(f"Connection error reaching {url}", r.status_code)
 
         if not r.ok:
             if r.status_code == 404:
@@ -499,7 +519,8 @@ def authenticate(
                 j = r.json()
                 msg = j["message"]
                 raise ServerError(
-                    f"Server response: {r.status_code} {r.reason} ({msg})"
+                    f"Server response: {r.status_code} {r.reason} ({msg})",
+                    r.status_code,
                 )
 
 
@@ -523,10 +544,12 @@ def download_file(file: dict, output_dir: Path | str = Path(".")) -> Path:
         cookies = {k: v for k, v in session.cookies.get_dict().items() if v is not None}
         r = session.get(url, stream=True, cookies=cookies)
     except requests.exceptions.ConnectionError as e:
-        raise ServerError(f"Connection error reaching {url}")
+        raise ServerError(f"Connection error reaching {url}", r.status_code)
 
     if not r.ok:
-        raise ServerError(f"Server response: {r.status_code} {r.reason} for {url}")
+        raise ServerError(
+            f"Server response: {r.status_code} {r.reason} for {url}", r.status_code
+        )
 
     path = Path(output_dir) / file["filename"]
 
@@ -535,11 +558,17 @@ def download_file(file: dict, output_dir: Path | str = Path(".")) -> Path:
             for data in r.iter_content(chunk_size=CHUNK_SIZE):
                 handle.write(data)
         except urllib3.exceptions.ProtocolError as e:
-            raise ServerError(f"Bad connection error (ProtocolError) for {url}")
+            raise ServerError(
+                f"Bad connection error (ProtocolError) for {url}", r.status_code
+            )
         except urllib3.exceptions.IncompleteRead as e:
-            raise ServerError(f"Bad connection error (IncompleteRead) for {url}")
+            raise ServerError(
+                f"Bad connection error (IncompleteRead) for {url}", r.status_code
+            )
         except requests.exceptions.ChunkedEncodingError as e:
-            raise ServerError(f"Bad connection error (ChunkedEncodingError) for {url}")
+            raise ServerError(
+                f"Bad connection error (ChunkedEncodingError) for {url}", r.status_code
+            )
     return path
 
 
@@ -639,12 +668,14 @@ def files(
     try:
         r = requests.get(url)
     except requests.exceptions.ConnectionError as e:
-        raise ServerError(f"Connection error reaching {url}")
+        raise ServerError(f"Connection error reaching {url}", r.status_code)
 
     if not r.ok:
         j = r.json()
         msg = j["message"]
-        raise ServerError(f"Server response: {r.status_code} {r.reason} ({msg})")
+        raise ServerError(
+            f"Server response: {r.status_code} {r.reason} ({msg})", r.status_code
+        )
 
     j = r.json()
     if verbose:
@@ -683,12 +714,14 @@ def data(
     try:
         r = requests.get(url)
     except requests.exceptions.ConnectionError as e:
-        raise ServerError(f"Connection error reaching {url}")
+        raise ServerError(f"Connection error reaching {url}", r.status_code)
 
     if not r.ok:
         j = r.json()
         msg = j["message"]
-        raise ServerError(f"Server response: {r.status_code} {r.reason} ({msg})")
+        raise ServerError(
+            f"Server response: {r.status_code} {r.reason} ({msg})", r.status_code
+        )
 
     j = r.json()
     if verbose:
@@ -715,6 +748,7 @@ def _about(args: argparse.Namespace):
         print(f"documentation: {documentation_url}")
     except ServerError as e:
         print(e)
+        sys.exit(e.status_code // 100)
 
 
 def _instruments(args: argparse.Namespace):
@@ -732,7 +766,7 @@ def _instruments(args: argparse.Namespace):
         )
     except ServerError as e:
         print(e)
-        return
+        sys.exit(e.status_code // 100)
 
     if not info:
         print(" ".join(instruments_response))
@@ -763,7 +797,7 @@ def _datasets(args: argparse.Namespace):
         )
     except ServerError as e:
         print(e)
-        return
+        sys.exit(e.status_code // 100)
 
     if not info:
         print(" ".join(datasets_response))
@@ -807,7 +841,7 @@ def _products(args: argparse.Namespace):
             )
     except ServerError as e:
         print(e)
-        return
+        sys.exit(e.status_code // 100)
 
     if vars(args)["1"]:
         print(" ".join(p["id"] for p in products_response["products"]))
@@ -909,7 +943,7 @@ def _info(args):
             print(description)
     except ServerError as e:
         print(e)
-        return
+        sys.exit(e.status_code // 100)
 
 
 def _download_files(
@@ -937,10 +971,10 @@ def _download_files(
             )
         except UserNotFound as e:
             print(e)
-            sys.exit(1)
+            sys.exit(6)
         except ServerError as e:
             print(e)
-            sys.exit(1)
+            sys.exit(e.status_code // 100)
 
     iterable_files: Iterable[dict]
     if quiet:
@@ -1021,7 +1055,7 @@ def _files(args: argparse.Namespace):
         )
     except ServerError as e:
         print(e)
-        return
+        sys.exit(e.status_code // 100)
 
     if args.verbose:
         instrument = files_response["instrument"]
@@ -1140,7 +1174,7 @@ def _eventdata(args: argparse.Namespace):
         )
     except ServerError as e:
         print(e)
-        return
+        sys.exit(e.status_code // 100)
 
     if args.verbose:
         instrument = events_response["instrument"]
