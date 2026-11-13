@@ -8,7 +8,7 @@ interface is typically used like::
     {'documentation': 'https://mlso-api-client.readthedocs.io/en/latest/',
      'homepage': 'https://www2.hao.ucar.edu/mlso',
      'support': 'mlso_data_requests@ucar.edu',
-     'version': '1.1.0'}
+     'version': '1.2.0'}
     >>> client.instruments()
     [{'id': 'events',
       'start-date': '2002-02-27T00:00:00',
@@ -43,8 +43,18 @@ The Unix command-line interface, ``mlsoapi``, is also available and accessed
 through the `main` routine in this module.
 
 The command line utility exits with status code 0 for no error, 6 for user not
-found when downloading a file and otherwise HTTP status code / 100, e.g., an
-HTTP 404 would exit with status code 4.
+found when downloading a file, 7 for no connection (timeout, etc.), and
+otherwise HTTP status code / 100, e.g., an HTTP 404 would exit with status code
+4. So this makes the status codes:
+
+- 0 -> no error
+- 1 -> informational message
+- 2 -> not used, 0 is a successful call
+- 3 -> redirection
+- 4 -> client error
+- 5 -> server error
+- 6 -> user not found
+- 7 -> no connection, timeout, etc.
 """
 
 import argparse
@@ -111,10 +121,10 @@ class ServerError(Exception):
 
     def __init__(self, message: str, status_code: Optional[int] = None):
         super().__init__(message)
-        self.status_code = status_code
+        self.status_code = 700 if status_code is None else status_code
 
 
-def get_terminal_width() -> 120:
+def get_terminal_width() -> int:
     """Retrieve the width of the terminal. Returns ``None`` if not running in an
     environment where the width can be retrieved.
     """
@@ -138,7 +148,7 @@ def about(
         {'documentation': 'https://mlso-api-client.readthedocs.io/en/latest/',
         'homepage': 'https://www2.hao.ucar.edu/mlso',
         'support': 'mlso_data_requests@ucar.edu',
-        'version': '1.1.0'}
+        'version': '1.2.0'}
 
     ``about`` can raise a ``ServerError`` if the server response is not valid.
     """
@@ -279,6 +289,24 @@ def datasets(
     api_version: str = API_VERSION,
     verbose: bool = False,
 ):
+    """Retrieve the datasets available, and if ``info`` is ``True`` some
+    information about them. For example::
+
+        >>> from mlso.api import client
+        >>> client.datasets()
+        [{'id': 'events',
+          'start-date': '2010-01-02T00:00:00',
+          'end-date': '2026-11-13T00:00:00',
+          'name': 'MLSO events'}]
+
+    Or::
+
+        >>> [d["id"] for d in client.datasets()]
+        ['events']
+
+    ``datasets`` can raise a ``ServerError`` if there is a problem with the
+    web request.
+    """
     url = f"{base_url}/{api_version}/datasets"
     if verbose:
         logger.debug(f"URL: {url}")
@@ -342,7 +370,16 @@ def dataset_info(
     verbose: bool = False,
 ) -> dict:
     """Returns info about an dataset's data available through the API, i.e., the
-    ``/datasets/<dataset-id>/`` endpoint."""
+    ``/datasets/<dataset-id>/`` endpoint.
+
+        >>> client.dataset_info("events")
+        {'dates': {'end-date': '2026-11-13T00:00:00',
+          'start-date': '2010-01-02T00:00:00'},
+         'description': 'The event dataset lists the CME, flares, prominence eruptions, filament eruptions, and other significant activity in MLSO observations. Events are found by automated process, observers, and later analysis, but validated and corrected by human analysts.',
+         'doi': '',
+         'landing-page': 'https://mlso.hao.ucar.edu/mlso_solar_activity.php',
+         'name': 'MLSO events'}
+    """
     url = f"{base_url}/{api_version}/datasets/{dataset}/"
     if verbose:
         logger.debug(f"URL: {url}")
@@ -411,7 +448,7 @@ def products(
     try:
         r = requests.get(url)
     except requests.exceptions.ConnectionError as e:
-        raise ServerError(f"Connection error reaching {url}", r.status_code)
+        raise ServerError(f"Connection error reaching {url}")
 
     if not r.ok:
         try:
@@ -454,7 +491,7 @@ def product_info(
     try:
         r = requests.get(url)
     except requests.exceptions.ConnectionError as e:
-        raise ServerError(f"Connection error reaching {url}", r.status_code)
+        raise ServerError(f"Connection error reaching {url}")
 
     if not r.ok:
         try:
@@ -507,7 +544,7 @@ def authenticate(
         try:
             r = session.get(url)
         except requests.exceptions.ConnectionError as e:
-            raise ServerError(f"Connection error reaching {url}", r.status_code)
+            raise ServerError(f"Connection error reaching {url}")
 
         if not r.ok:
             if r.status_code == 404:
@@ -524,7 +561,9 @@ def authenticate(
                 )
 
 
-def download_file(file: dict, output_dir: Path | str = Path(".")) -> Path:
+def download_file(
+    file: dict, output_dir: Path | str = Path("."), use_cache: bool = False
+) -> Path:
     """Download a single file to the given output directory. The ``file``
     argument is a dict with at least fields "url" and "filename". ``output_dir``
     is simply the directory to put the downloaded file. Return a pathlib.Path of
@@ -540,18 +579,22 @@ def download_file(file: dict, output_dir: Path | str = Path(".")) -> Path:
     Can raise ``ServerError`` if there is a problem with the web request.
     """
     url = file["url"]
+    path = Path(output_dir) / file["filename"]
+
+    # don't download if the file is already present and `use_cache` set
+    if use_cache and os.path.exists(path):
+        return path
+
     try:
         cookies = {k: v for k, v in session.cookies.get_dict().items() if v is not None}
         r = session.get(url, stream=True, cookies=cookies)
     except requests.exceptions.ConnectionError as e:
-        raise ServerError(f"Connection error reaching {url}", r.status_code)
+        raise ServerError(f"Connection error reaching {url}")
 
     if not r.ok:
         raise ServerError(
             f"Server response: {r.status_code} {r.reason} for {url}", r.status_code
         )
-
-    path = Path(output_dir) / file["filename"]
 
     with open(path, "wb") as handle:
         try:
@@ -668,7 +711,7 @@ def files(
     try:
         r = requests.get(url)
     except requests.exceptions.ConnectionError as e:
-        raise ServerError(f"Connection error reaching {url}", r.status_code)
+        raise ServerError(f"Connection error reaching {url}")
 
     if not r.ok:
         j = r.json()
@@ -696,7 +739,38 @@ def data(
     client: str | None = "python",
     page: int = 0,
 ):
-    """."""
+    """Retrieve metadata about data from a given dataset and
+    filtered by various optional filters, i.e., handle retrieving the results
+    of the ``/datasets/{dataset}/products/{type_id}`` endpoint. For
+    example::
+
+        >>> from mlso.api import client
+        >>> client.data("events", "cme", {"start-date": "2026-04-01", "end-date": "2026-04-03"})
+        {'dataset': 'events',
+         'end-date': '2026-04-03',
+         'events': [{'comment': 'A  wide, bulb CME with a bright core between PA 295-05.',
+           'date-end': '2026-04-02T00:17:00',
+           'date-obs': '2026-04-01T22:36:00',
+           'instrument': 'kcor',
+           'quadrant': 'N-NW limb',
+           'type': 'cme'}],
+         'n_events': 1,
+         'page': 0,
+         'results_per_page': 5000,
+         'start-date': '2026-04-01',
+         'type': 'cme'}
+
+    =============== ===========================================================
+    *Parameter*     *Description*
+    =============== ===========================================================
+    ``start‑date``  Return only events after the "start-date".
+    ``end‑date``    Return only events before the "end-date".
+    ``instrument``  Return only events that are seen in the data from the given
+                    instrument.
+    =============== ===========================================================
+
+    Can raise a ``ServerError`` if there is a problem with the web request.
+    """
     url = f"{base_url}/{api_version}/datasets/{dataset_id}/products/{product_id}/data"
 
     if filters is not None and len(filters) > 0:
@@ -714,7 +788,7 @@ def data(
     try:
         r = requests.get(url)
     except requests.exceptions.ConnectionError as e:
-        raise ServerError(f"Connection error reaching {url}", r.status_code)
+        raise ServerError(f"Connection error reaching {url}")
 
     if not r.ok:
         j = r.json()
@@ -955,6 +1029,7 @@ def _download_files(
     username: str,
     verbose: bool = False,
     quiet: bool = False,
+    force: bool = False,
 ):
     """Download the given files to an output directory. The ``filelist`` argument
     is a list of dicts with fields "url" and "filename".
@@ -987,7 +1062,7 @@ def _download_files(
     n_failed = 0
     for f in iterable_files:
         try:
-            filepath = download_file(f, output_dir)
+            filepath = download_file(f, output_dir, use_cache=not force)
         except ServerError as e:
             message(f"download failed: {e}")
             n_failed += 1
@@ -1008,6 +1083,81 @@ def _sizeof_fmt(n_bytes: int) -> str:
     unit, num_decimals = unit_list[exponent]
     format_string = "{:.%sf} {}" % (num_decimals)
     return format_string.format(quotient, unit)
+
+
+def _files_csv(filelist: list[dict], page: int = 0, verbose: bool = False):
+    """Output files list to stdout in CSV format."""
+    for f in filelist:
+        instrument = f["instrument"]
+        product_name = f["product"]
+        filename = f["filename"]
+        date_obs = f["date-obs"]
+        filesize = _sizeof_fmt(f["filesize"]) if instrument != "events" else ""
+        print(f"{date_obs},{instrument},{product_name},{filesize},{filename}")
+
+
+def _files_columns(filelist: list[dict], page: int = 0, verbose: bool = False):
+    """Output files list to stdout in columns format, e.g., just a table with
+    fixed width columns.
+    """
+    n_columns = get_terminal_width()
+
+    datetime_width = 21
+    instrument_width = 10
+    max_productname_width = 15
+    filesize_width = 10
+    max_filename_width = (
+        n_columns
+        - datetime_width
+        - 1
+        - instrument_width
+        - 1
+        - max_productname_width
+        - 1
+        - filesize_width
+        - 1
+    )
+
+    product_sep = "-" * max_productname_width
+    if len(filelist) > 0:
+        if verbose:
+            logger.debug("")
+        print(
+            f"{'Date/time':{datetime_width}s} {'Instrument':{instrument_width}s} {'Product':{max_productname_width}s} {'Filesize':{filesize_width}s} {'Filename':{max_filename_width}s}"
+        )
+        print(
+            f"{'-' * datetime_width} {'-' * instrument_width} {product_sep} {'-' * filesize_width} {'-' * max_filename_width}"
+        )
+        total_filesize = 0
+    for f in filelist:
+        total_filesize += f["filesize"]
+        instrument = f["instrument"]
+        product_name = f["product"]
+        product_name = (
+            product_name
+            if len(product_name) <= max_productname_width
+            else f"{product_name[:max_productname_width-2]}.."
+        )
+        filename = f["filename"]
+        filename = (
+            filename
+            if len(filename) <= max_filename_width
+            else f"{filename[:max_filename_width-2]}.."
+        )
+        filesize = _sizeof_fmt(f["filesize"]) if instrument != "events" else ""
+        print(
+            f"{f['date-obs']:{datetime_width}s} {instrument:{instrument_width}s} {product_name:{max_productname_width}s} {filesize:>{filesize_width}s} {filename:{max_filename_width}s}"
+        )
+    if len(filelist) > 1:
+        print(
+            f"{'-' * datetime_width} {'-' * instrument_width} {product_sep} {'-' * filesize_width} {'-' * max_filename_width}"
+        )
+        page_info = f"(page {page})" if page > 0 else ""
+        n_files = f"{len(filelist)} files {page_info}"
+        files_width = datetime_width + 1 + instrument_width + 1 + max_productname_width
+        print(
+            f"{n_files:{files_width}s} {_sizeof_fmt(total_filesize):>{filesize_width}s} {''}"
+        )
 
 
 def _files(args: argparse.Namespace):
@@ -1069,24 +1219,6 @@ def _files(args: argparse.Namespace):
         print(f"End date   : {end_date}")
         print(f"Filesize   : {filesize}")
 
-    n_columns = get_terminal_width()
-
-    datetime_width = 21
-    instrument_width = 10
-    max_productname_width = 15
-    filesize_width = 10
-    max_filename_width = (
-        n_columns
-        - datetime_width
-        - 1
-        - instrument_width
-        - 1
-        - max_productname_width
-        - 1
-        - filesize_width
-        - 1
-    )
-
     filelist = files_response["files"]
     if args.download:
         _download_files(
@@ -1098,50 +1230,93 @@ def _files(args: argparse.Namespace):
             args.username,
             verbose=args.verbose,
             quiet=args.quiet,
+            force=args.force,
         )
     else:
-        product_sep = "-" * max_productname_width
-        if len(filelist) > 0:
-            if args.verbose:
-                logger.debug("")
+        if args.output_format.lower() == "columns":
+            _files_columns(filelist, args.page, args.verbose)
+        elif args.output_format.lower() == "csv":
+            _files_csv(filelist, args.page, args.verbose)
+        else:
+            _files_columns(filelist, args.page, args.verbose)
+
+
+def _eventdata_csv(eventlist: list[dict], page: int = 0, verbose: bool = False):
+    """Output files list to stdout in CSV format."""
+    for e in eventlist:
+        start_date = e["date-obs"]
+        end_date = e["date-end"]
+        instrument = e["instrument"]
+        event_type = e["type"]
+        quadrant = e["quadrant"]
+        comment = e["comment"]
+        # [NOTE]: it is important to not have a space after the commas for the
+        # quoted fields, which may have commas inside them, for various
+        # CSV-readers to correctly parse them
+        print(
+            f'{start_date},{end_date},{instrument},{event_type},"{quadrant}","{comment}"'
+        )
+
+
+def _eventdata_columns(eventlist: list[dict], page: int = 0, verbose: bool = False):
+    """Output event list to stdout in columns format, e.g., just a table with
+    fixed width columns.
+    """
+    max_eventtype_width = 7
+    instrument_width = 10
+    n_columns = get_terminal_width()
+
+    date_width = 21
+    quadrant_width = 10
+    comment_width = max(
+        n_columns
+        - date_width
+        - 1
+        - date_width
+        - 1
+        - instrument_width
+        - 1
+        - max_eventtype_width
+        - 1
+        - quadrant_width
+        - 1,
+        10,
+    )
+
+    if len(eventlist) > 0:
+        if verbose:
+            logger.debug("")
+        print(
+            f"{'Start date/time':{date_width}s} {'End date/time':{date_width}s} {'Instrument':{instrument_width}} {'Type':{max_eventtype_width}s} {'Quadrant':{quadrant_width}s} {'Comment':{comment_width}s}"
+        )
+        print(
+            f"{'-' * date_width} {'-' * date_width} {'-' * instrument_width} {'-' * max_eventtype_width} {'-' * quadrant_width} {'-' * comment_width}"
+        )
+    for event in eventlist:
+        instrument = event["instrument"]
+        event_type = event["type"]
+        quadrant = event["quadrant"]
+        comments = textwrap.wrap(event["comment"], width=comment_width)
+        start_date = event["date-obs"]
+        end_date = event["date-end"]
+        event_type = (
+            event_type
+            if len(event_type) <= max_eventtype_width
+            else f"{event_type[:max_eventtype_width-2]}.."
+        )
+        print(
+            f"{start_date:{date_width}s} {end_date:{date_width}s} {instrument:{instrument_width}s} {event_type:{max_eventtype_width}s} {quadrant:{quadrant_width}s} {comments[0] if len(comments) > 0 else '':{comment_width}s}"
+        )
+        for c in comments[1:]:
             print(
-                f"{'Date/time':{datetime_width}s} {'Instrument':{instrument_width}s} {'Product':{max_productname_width}s} {'Filesize':{filesize_width}s} {'Filename':{max_filename_width}s}"
+                f"{'':{date_width}s} {'':{date_width}s} {'':{instrument_width}s} {'':{max_eventtype_width}s} {'':{quadrant_width}s} {c:{comment_width}s}"
             )
-            print(
-                f"{'-' * datetime_width} {'-' * instrument_width} {product_sep} {'-' * filesize_width} {'-' * max_filename_width}"
-            )
-            total_filesize = 0
-        for f in filelist:
-            total_filesize += f["filesize"]
-            instrument = f["instrument"]
-            product_name = f["product"]
-            product_name = (
-                product_name
-                if len(product_name) <= max_productname_width
-                else f"{product_name[:max_productname_width-2]}.."
-            )
-            filename = f["filename"]
-            filename = (
-                filename
-                if len(filename) <= max_filename_width
-                else f"{filename[:max_filename_width-2]}.."
-            )
-            filesize = _sizeof_fmt(f["filesize"]) if instrument != "events" else ""
-            print(
-                f"{f['date-obs']:{datetime_width}s} {instrument:{instrument_width}s} {product_name:{max_productname_width}s} {filesize:>{filesize_width}s} {filename:{max_filename_width}s}"
-            )
-        if len(filelist) > 1:
-            print(
-                f"{'-' * datetime_width} {'-' * instrument_width} {product_sep} {'-' * filesize_width} {'-' * max_filename_width}"
-            )
-            page_info = f"(page {args.page})" if args.page > 0 else ""
-            n_files = f"{len(filelist)} files {page_info}"
-            files_width = (
-                datetime_width + 1 + instrument_width + 1 + max_productname_width
-            )
-            print(
-                f"{n_files:{files_width}s} {_sizeof_fmt(total_filesize):>{filesize_width}s} {''}"
-            )
+    if len(eventlist) > 1:
+        print(
+            f"{'-' * date_width} {'-' * date_width} {'-' * instrument_width} {'-' * max_eventtype_width} {'-' * quadrant_width} {'-' * comment_width}"
+        )
+        page_info = f"(page {page})" if page > 0 else ""
+        print(f"{len(eventlist):d} events {page_info}")
 
 
 def _eventdata(args: argparse.Namespace):
@@ -1187,60 +1362,13 @@ def _eventdata(args: argparse.Namespace):
         logger.info(f"End date   : {end_date}")
 
     eventlist = events_response["events"]
-    max_eventtype_width = 7
-    instrument_width = 10
-    n_columns = get_terminal_width()
 
-    date_width = 21
-    quadrant_width = 10
-    comment_width = max(
-        n_columns
-        - date_width
-        - 1
-        - date_width
-        - 1
-        - instrument_width
-        - 1
-        - max_eventtype_width
-        - 1
-        - quadrant_width
-        - 1,
-        10,
-    )
-    if len(eventlist) > 0:
-        if args.verbose:
-            logger.debug("")
-        print(
-            f"{'Start date/time':{date_width}s} {'End date/time':{date_width}s} {'Instrument':{instrument_width}} {'Type':{max_eventtype_width}s} {'Quadrant':{quadrant_width}s} {'Comment':{comment_width}s}"
-        )
-        print(
-            f"{'-' * date_width} {'-' * date_width} {'-' * instrument_width} {'-' * max_eventtype_width} {'-' * quadrant_width} {'-' * comment_width}"
-        )
-    for event in eventlist:
-        instrument = event["instrument"]
-        event_type = event["type"]
-        quadrant = event["quadrant"]
-        comments = textwrap.wrap(event["comment"], width=comment_width)
-        start_date = event["date-obs"]
-        end_date = event["date-end"]
-        event_type = (
-            event_type
-            if len(event_type) <= max_eventtype_width
-            else f"{event_type[:max_eventtype_width-2]}.."
-        )
-        print(
-            f"{start_date:{date_width}s} {end_date:{date_width}s} {instrument:{instrument_width}s} {event_type:{max_eventtype_width}s} {quadrant:{quadrant_width}s} {comments[0] if len(comments) > 0 else '':{comment_width}s}"
-        )
-        for c in comments[1:]:
-            print(
-                f"{'':{date_width}s} {'':{date_width}s} {'':{instrument_width}s} {'':{max_eventtype_width}s} {'':{quadrant_width}s} {c:{comment_width}s}"
-            )
-    if len(eventlist) > 1:
-        print(
-            f"{'-' * date_width} {'-' * date_width} {'-' * instrument_width} {'-' * max_eventtype_width} {'-' * quadrant_width} {'-' * comment_width}"
-        )
-        page_info = f"(page {args.page})" if args.page > 0 else ""
-        print(f"{len(eventlist):d} events {page_info}")
+    if args.output_format.lower() == "columns":
+        _eventdata_columns(eventlist, args.page, args.verbose)
+    elif args.output_format.lower() == "csv":
+        _eventdata_csv(eventlist, args.page, args.verbose)
+    else:
+        _eventdata_columns(eventlist, args.page, args.verbose)
 
 
 def _data(args: argparse.Namespace):
@@ -1259,10 +1387,10 @@ def main():
     ::
 
         $ mlsoapi --help
-        usage: mlsoapi [-h] [-v] [-u URL] [--local] [--api-version VERSION] [--verbose] [-q]
-                       {about,instruments,products,info,files,events} ...
+        usage: mlsoapi [-h] [-v] [-u URL] [--local] [--api-version VERSION] [--verbose] [-q] [-w WIDTH]
+                    {about,instruments,products,info,files,datasets,data} ...
 
-        MLSO API command line interface (mlso-api-client 1.1.0)
+        MLSO API command line interface (mlso-api-client 1.2.0)
 
         options:
         -h, --help            show this help message and exit
@@ -1278,21 +1406,23 @@ def main():
                               version currently available
         --verbose             output all queries URLs and JSON responses
         -q, --quiet           surpress informational messages
+        -w, --width WIDTH     line width to use
 
         Valid subcommands:
           Use 'mlsoapi <subcommand> --help' for more detailed for any of the
           below subcommands
 
-          {about,instruments,products,info,files,events}
-                              Subcommand description
-            about             Information about the MLSO API server
-            instruments       MLSO datasets/instruments with data available
-                              through the API
-            products          Products for a given instrument
-            info              More detailed information about an instrument or
-                              product
-            files             Data files for a given instrument and product
-            events            List matching events
+          {about,instruments,products,info,files,datasets,data}
+                                Subcommand description
+            about               Information about the MLSO API server
+            instruments         MLSO datasets/instruments with data available
+                                through the API
+            products            Products for a given instrument
+            info                More detailed information about an instrument
+                                or product
+            files               Data files for a given instrument and product
+            datasets            List available datasets
+            data                List matching events
 
         This commandline utility provides access to the data available at Mauna
         Loa Solar Observatory through the MLSO API. See the full documentation
@@ -1436,6 +1566,9 @@ def main():
         "-d", "--download", help="download the filtered files", action="store_true"
     )
     files_parser.add_argument(
+        "--force", help="download files even if already present", action="store_true"
+    )
+    files_parser.add_argument(
         "-u",
         "--username",
         help=f"email address already registered at HAO website ({SIGNUP_URL})",
@@ -1452,6 +1585,11 @@ def main():
         "--format",
         help='filter by file format: "fits" or "quicklook"',
         default="fits",
+    )
+    files_parser.add_argument(
+        "--output-format",
+        help='format to output the results in, e.g., "columns", "csv"',
+        default="columns",
     )
     files_parser.add_argument("--page", help="page of results", type=int, default=0)
     files_parser.set_defaults(func=_files, parser=files_parser)
@@ -1490,6 +1628,11 @@ def main():
         default=None,
     )
     data_parser.add_argument("-i", "--instrument", help="instrument", default=None)
+    data_parser.add_argument(
+        "--output-format",
+        help='format to output the results in, e.g., "columns", "csv"',
+        default="columns",
+    )
     data_parser.add_argument("--page", help="page of results", type=int, default=0)
     data_parser.set_defaults(func=_data, parser=data_parser)
 
