@@ -27,6 +27,7 @@ that can be used in non-interactive programs.
                  output_dir=output_dir, $
                  username=username, $
                  local=local, $
+                 page=page, $
                  base_url=base_url, $
                  api_version=api_version, $
                  verbose=verbose
@@ -62,6 +63,7 @@ Keywords
 :output_dir: ``in, optional, type=string, default='.'`` location to place downloaded files, creates if it doesn't already exist
 :username: ``in, optional, type=string`` username registered with HAO website, required if `/DOWNLOAD` set
 :local: ``in, optional, type=boolean`` set to use localhost as the API address
+:page: ``in, optional, type=int, default=0``  page index of files or data results to request, e.g., 0 is the first page, 1 is the second page, etc.
 :base_url: ``in, optional, type=string, default="http://api.mlso.ucar.edu"`` base URL for the MLSO API server
 :api_version: ``in, optional, type=string, default="v1"`` version of the API to use
 :verbose: ``in, optional, type=boolean`` set to print queried URLs and raw JSON responses
@@ -207,6 +209,7 @@ Keywords
                          every=every, $
                          event=event, $
                          client=client, $
+                         page=page, $
                          base_url=base_url, $
                          api_version=api_version, $
                          url_object=url_object
@@ -237,6 +240,7 @@ Keywords
 :every: ``in, optional, type=string`` time period to select 1 file from, e.g., "15minute" returns 1 file every 15 minutes; units are second, minute, hour, day, week, month, quarter, year
 :event: ``in, optional, type=string`` event type to return files during, currently only "cme"
 :client: ``in, optional, type=string, default="idl"`` client used, e.g., "idl", "forward"
+:page: ``;   page : in, optional, type=int, default=0`` page index of results to request, e.g., 0 is the first page, 1 is the second page, etc.
 :base_url: ``in, optional, type=string, default="http://api.mlso.ucar.edu"`` base URL for the APIå
 :api_version: ``in, optional, type=string, default="v1"``` version of the API to use
 :url_object: ``in, optional, type=IDLnetURL object`` existing `IDLnetURL` object if available
@@ -284,6 +288,7 @@ Keywords
                         start_date=start_date, $
                         end_date=end_date, $
                         instrument=instrument, $
+                        page=page, $
                         base_url=base_url, $
                         api_version=api_version, $
                         url_object=url_object
@@ -310,6 +315,7 @@ Keywords
 :start_date: ``in, optional, type=string`` start date to begin looking for files from
 :end_date: ``in, optional, type=string`` end date to end looking for files to
 :instrument: ``in, optional, type=string`` filter datasets by instrument observed in
+:page: ``;   page : in, optional, type=int, default=0`` page index of results to request, e.g., 0 is the first page, 1 is the second page, etc.
 :base_url: ``in, optional, type=string, default="http://api.mlso.ucar.edu"`` base URL for the APIå
 :api_version: ``in, optional, type=string, default="v1"``` version of the API to use
 :url_object: ``in, optional, type=IDLnetURL object`` existing `IDLnetURL` object if available
