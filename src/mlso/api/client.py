@@ -1406,7 +1406,7 @@ def main():
                               version currently available
         --verbose             output all queries URLs and JSON responses
         -q, --quiet           surpress informational messages
-        -w, --width WIDTH     line width to use
+        -w, --width WIDTH     line width to use for column output
 
         Valid subcommands:
           Use 'mlsoapi <subcommand> --help' for more detailed for any of the
@@ -1472,7 +1472,7 @@ def main():
     parser.add_argument(
         "-w",
         "--width",
-        help="line width to use",
+        help="line width to use for column output",
         type=int,
         default=None,
     )
