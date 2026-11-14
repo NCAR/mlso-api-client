@@ -14,7 +14,7 @@ requests, making the requests, parsing JSON responses, etc.
 
     >>> from mlso.api import client
     >>> print(f"Using client version v{client.__version__}")
-    Using client version v1.1.0
+    Using client version v1.2.0
 
 Instead of having to construct URLs and make the web requests, we can now use
 routines provides by the client API. The ``about`` routine now gives information
@@ -24,7 +24,7 @@ about the API web server.
 
     >>> info = client.about()
     >>> print(f"Using mlsoapi v{info['version']}, see {info['documentation']} for more information.")
-    Using mlsoapi v1.1.0, see https://mlso-api-client.readthedocs.io/en/latest/ for more information.
+    Using mlsoapi v1.2.0, see https://mlso-api-client.readthedocs.io/en/latest/ for more information.
 
 The ``instruments`` routine combines potentially many API calls to give basic
 information about all the available instruments.
@@ -330,7 +330,7 @@ A Unix command-line interface is also provided:
     usage: mlsoapi [-h] [-v] [-u URL] [--local] [--api-version VERSION] [--verbose] [-q]
                    {about,instruments,products,info,files,datasets,data} ...
 
-    MLSO API command line interface (mlso-api-client 1.1.0)
+    MLSO API command line interface (mlso-api-client 1.2.0)
 
     options:
     -h, --help            show this help message and exit
@@ -343,6 +343,7 @@ A Unix command-line interface is also provided:
                           API version to use; default is v1, the only version currently available
     --verbose             output all queries URLs and JSON responses
     -q, --quiet           surpress informational messages
+    -w, --width WIDTH     line width to use for column output
 
     Valid subcommands:
       Use 'mlsoapi <subcommand> --help' for more detailed for any of the below subcommands
@@ -369,8 +370,9 @@ the ``instruments`` subcommand:
     $ mlsoapi instruments
     ID       Instrument name                              Dates available
     -------- -------------------------------------------- -----------------------
-    kcor     COSMO K-Coronagraph (KCor)                   2013-09-30...2026-10-03
-    ucomp    Upgraded Coronal Multi-Polarimeter (UCoMP)   2021-07-15...2026-09-15
+    comp     Coronal Multi-Polarimeter (CoMP)             2011-01-03...2018-04-06
+    kcor     COSMO K-Coronagraph (KCor)                   2013-09-30...2026-11-14
+    ucomp    Upgraded Coronal Multi-Polarimeter (UCoMP)   2021-07-15...2026-11-13
 
 To show the product for a given instrument, use the ``products`` subcommand:
 
@@ -414,13 +416,19 @@ the available filters, use the ``--help`` option:
                           filter by files within the given Carrington Rotation
     --every EVERY         time to choose 1 file from, e.g., "1hr" to return a file from every hour
                           in the time period
+    --event-type TYPE     event type to search for files within: "cavity", "cme", "jet", "loop",
+                          "surge" or "all"
     -d, --download        download the filtered files
+    --force               download files even if already present
     -u, --username USERNAME
                           email address already registered at HAO website
                           (https://registration.hao.ucar.edu)
     -o, --output-dir OUTPUT_DIR
                           output directory for downloaded files, will be created if it doesn't exist
     -f, --format FORMAT   filter by file format: "fits" or "quicklook"
+    --output-format OUTPUT_FORMAT
+                          format to output the results in, e.g., "columns", "csv"
+    --page PAGE           page of results
 
 For example, to show the UCoMP level 2 files in the 789 nm wave region after
 2025-03-23, do:
@@ -529,6 +537,9 @@ filters to narrows the data search:
     -e, --end-date DATE   return data before this date, e.g., "2026-04-01" or "2026-04-01T22:36:15"
     -i, --instrument INSTRUMENT
                           instrument
+    --output-format OUTPUT_FORMAT
+                          format to output the results in, e.g., "columns", "csv"
+    --page PAGE           page of results
 
 The ``-1`` option for the `instruments`, `datasets`, and `products` subcommands
 can be useful when looping through instruments, datasets, or products:
@@ -566,6 +577,7 @@ and dates of the available data.
     IDL> mlsoapi
     ID       Instrument name                              Dates available
     -------- -------------------------------------------- -----------------------
+    comp     Coronal Multi-Polarimeter (CoMP)             2011-01-03...2018-04-06
     kcor     COSMO K-Coronagraph (KCor)                   2013-09-30...2026-10-05
     ucomp    Upgraded Coronal Multi-Polarimeter (UCoMP)   2021-07-15...2026-09-15
 
