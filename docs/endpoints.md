@@ -17,6 +17,10 @@ production. So, currently, the following endpoints all begin:
 http://api.mlso.ucar.edu/v1
 ```
 
+Note: in the below examples, ``curl`` will be used to demonstrate the output
+for a given endpoint. Any client could be used in its place, e.g., a web
+browser or any programming language with the ability to make GET requests.
+
 ## API version v1
 
 ### `HTTP GET /about`
@@ -286,12 +290,13 @@ The URL parameters available to filter the files are given in the table below.
 | `end‑date` | Return only files before the "end-date". |
 | `cr` | Return only files matching Carrington Rotation number "cr". |
 | `every` | Return only a single file for every time period matching "every". The recognized time periods are second, minute, hour, day, week, month, quarter, or year (optionally ending in "s"). This parameter is an integer followed by one of these time periods, e.g., `every=2hours`, `every=1day`, or `every=12hours`. |
-| `event` | Return only files when occur during an event of the given type, currently only "cme" |
+| `event` | Return only files which occur during an event of the given type, currently only "cme", "cavity", "jet", "loop", "surge", or "all" (which includes events beyond these types) |
 | `wave‑region` | Return only files for the given wave region (UCoMP only). Valid values are "637", "706", "789", 1074", "1079". |
 | `obs‑plan` | Return only files matching the given observing plan, e.g., "waves" or "synoptic" (UCoMP only). |
 
-The valid date formats are: "%Y-%m-%dT%H:%M:%S" or "%Y-%m-%d", e.g.,
-"2025-01-01T10:30:00" or "2025-01-01". All date/times are in UT.
+The valid date formats are: "%Y-%m-%dT%H:%M:%S", "%Y-%m-%d", or
+"%Y-%m-%dT%H:%M:%S.%f", e.g., "2025-01-01T10:30:00", "2025-01-01", or
+"025-01-01T10:30:00.000". All date/times are in UT.
 
 Use the "url" field of the file results gives a URL that can be used to download
 the given file. You must call the `/authenticate` endpoint with a registered
@@ -507,8 +512,9 @@ The URL parameters available to filter the files are given in the table below.
 | `end‑date` | Return only data before the "end-date". |
 | `instrument` | Return only date seen in `<instrument-id>`. |
 
-The valid date formats are: "%Y-%m-%dT%H:%M:%S" or "%Y-%m-%d", e.g.,
-"2025-01-01T10:30:00" or "2025-01-01". All date/times are in UT.
+The valid date formats are: "%Y-%m-%dT%H:%M:%S", "%Y-%m-%d", or
+"%Y-%m-%dT%H:%M:%S.%f", e.g., "2025-01-01T10:30:00", "2025-01-01", or
+"025-01-01T10:30:00.000". All date/times are in UT.
 
 Unlike the `/instruments/<instrument-id>/products/<product-id>/files` endpoint,
 you do not have to download a separate file to get the data nor do you need to
