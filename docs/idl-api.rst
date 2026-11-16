@@ -90,7 +90,7 @@ Retrieve basic facts about the MLSO API server, i.e., the results of the
     DOCUMENTATION   STRING    'https://mlso-api-client.readthedocs.io/en/latest/'
     HOMEPAGE        STRING    'https://www2.hao.ucar.edu/mlso'
     SUPPORT         STRING    'mlso_data_requests@ucar.edu'
-    VERSION         STRING    '1.1.0'
+    VERSION         STRING    '1.2.0'
 
 Returns
 """""""
